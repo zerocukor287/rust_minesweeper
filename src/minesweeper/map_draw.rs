@@ -41,21 +41,34 @@ fn add_row_number_test() {
     assert_eq!("BA", add_row_number(52));
 }
 
+fn number_of_spaces(width: u8) -> u8 {
+    let log: u8 = u8::ilog10(width).try_into().unwrap();
+    log
+}
+
 fn add_first_line(width: u8) -> String {
     let mut line = String::new();
+    let spaces = number_of_spaces (width) + 1;
     line.push(' ');
     for number in 0..width {
         line.push_str((number + 1).to_string().as_str());
-        line.push(' ');
+        let digits = number_of_spaces(number + 1);
+        for _ in 0..spaces-digits {
+            line.push(' ');
+        }
     }
     line
 }
 
 fn generate_line(width: u8) -> String {
     let mut line = String::new();
+    let spaces = number_of_spaces (width);
     line.push('|');
     for _ in 0..width {
         line.push_str("o|");
+        for _ in 0..spaces {
+            line.push(' ');
+        }
     }
     line
 }
