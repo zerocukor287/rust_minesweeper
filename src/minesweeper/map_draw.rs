@@ -1,7 +1,7 @@
 use super::map_generator::TileState;
 
 /// Generates a 2D map for minesweeper
-pub fn visualize_map(mine_map: Vec<Vec<TileState>>) -> String {
+pub fn visualize_map(mine_map: &Vec<Vec<TileState>>) -> String {
     let mut map = String::new();
     map.push_str(add_first_line(mine_map[0].len() as u8).as_str());
     map.push('\n');
