@@ -1,11 +1,12 @@
+use super::map_generator::TileState;
 
 /// Generates a 2D map for minesweeper
-pub fn generate_map(rows: u8, columns: u8) -> String {
+pub fn visualize_map(mine_map: Vec<Vec<TileState>>) -> String {
     let mut map = String::new();
-    map.push_str(add_first_line(columns).as_str());
+    map.push_str(add_first_line(mine_map[0].len() as u8).as_str());
     map.push('\n');
-    for row in 0..rows {
-        map.push_str(generate_line(columns).as_str());
+    for row in 0..(mine_map[0].len() as u8) {
+        map.push_str(generate_line(&mine_map[row as usize]).as_str());
         map.push(' ');
         map.push_str(add_row_number(row).as_str());
         map.push('\n');
@@ -76,12 +77,17 @@ fn add_first_line_test() {
     assert_eq!(" 1  2  3  4  5  6  7  8  9  10 11 12 ", add_first_line(12));
 }
 
-fn generate_line(width: u8) -> String {
+fn generate_line(mine_line: &Vec<TileState>) -> String {
     let mut line = String::new();
-    let spaces = number_of_spaces (width);
+    let spaces = number_of_spaces (mine_line.len() as u8);
     line.push('|');
-    for _ in 0..width {
-        line.push_str("o|");
+    for tile in mine_line.iter() {
+        match tile {
+            TileState::Mine => line.push('*'),
+            TileState::HiddenEmpty(_) => line.push('o'),
+            TileState::VisibleEmpty(num) => line.push_str(num.to_string().as_str()), 
+        }
+        line.push('|');
         for _ in 0..spaces {
             line.push(' ');
         }
