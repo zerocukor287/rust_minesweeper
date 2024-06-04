@@ -84,7 +84,8 @@ fn generate_line(mine_line: &Vec<TileState>) -> String {
     for tile in mine_line.iter() {
         match tile {
             TileState::Mine => line.push('*'),
-            TileState::HiddenEmpty(_) => line.push('o'),
+            TileState::HiddenEmpty(num) => //line.push('o'),
+                line.push_str(num.to_string().as_str()), 
             TileState::VisibleEmpty(num) => line.push_str(num.to_string().as_str()), 
         }
         line.push('|');
