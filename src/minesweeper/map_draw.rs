@@ -1,3 +1,5 @@
+use std::io::ErrorKind;
+
 use super::map_generator::TileState;
 
 /// Generates a 2D map for minesweeper
@@ -33,6 +35,25 @@ fn add_row_number(row: u8) -> String {
     ret
 }
 
+pub fn get_row_number(input: &str) -> Result<u8, ErrorKind> {
+    if input.is_empty() {
+        return Err(ErrorKind::InvalidInput);
+    }
+    let mut sum = 0;
+    let mut first = true;
+    for ch in input.chars() {
+        if !ch.is_ascii_alphabetic() {
+            return Err(ErrorKind::InvalidInput);
+        }
+        if !first {
+            sum = (1 + sum) * MAX_ASCII_CHARACTERS;
+        }
+        sum += ch.to_ascii_uppercase() as u8 - FIRST_ASCII_CHARACTERS;
+        first = false;
+    }
+    Ok(sum)
+}
+
 #[test]
 fn add_row_number_test() {
     assert_eq!("A", add_row_number(0));
@@ -41,6 +62,27 @@ fn add_row_number_test() {
     assert_eq!("AA", add_row_number(26));
     assert_eq!("BA", add_row_number(52));
     assert_eq!("IV", add_row_number(255));
+}
+
+#[test]
+fn get_row_number_test() {
+    assert_eq!(Ok(0), get_row_number("A"));
+    assert_eq!(Ok(0), get_row_number("a"));
+    assert_eq!(Ok(1), get_row_number("B"));
+    assert_eq!(Ok(8), get_row_number("I"));
+    assert_eq!(Ok(26), get_row_number("AA"));
+    assert_eq!(Ok(52), get_row_number("BA"));
+    assert_eq!(Ok(52), get_row_number("Ba"));
+    assert_eq!(Ok(52), get_row_number("bA"));
+    assert_eq!(Ok(52), get_row_number("ba"));
+    assert_eq!(Ok(255), get_row_number("IV"));
+}
+
+#[test]
+fn get_row_number_test_invalid() {
+    assert_eq!(Err(ErrorKind::InvalidInput), get_row_number(""));
+    assert_eq!(Err(ErrorKind::InvalidInput), get_row_number("7"));
+    assert_eq!(Err(ErrorKind::InvalidInput), get_row_number("A7c"));
 }
 
 fn number_of_spaces(width: u8) -> u8 {
@@ -83,9 +125,9 @@ fn generate_line(mine_line: &Vec<TileState>) -> String {
     line.push('|');
     for tile in mine_line.iter() {
         match tile {
-            TileState::Mine => line.push('*'),
-            TileState::HiddenEmpty(num) => //line.push('o'),
-                line.push_str(num.to_string().as_str()), 
+            TileState::Mine => line.push('o'),
+            TileState::MineDefused => line.push('X'),
+            TileState::HiddenEmpty(_) => line.push('o'),
             TileState::VisibleEmpty(num) => line.push_str(num.to_string().as_str()), 
         }
         line.push('|');
@@ -96,3 +138,15 @@ fn generate_line(mine_line: &Vec<TileState>) -> String {
     line
 }
 
+pub fn get_column_number(input: &str) -> Result<u8, ErrorKind> {
+    match input.parse::<u8>() {
+        Ok(num) => Ok(num-1),
+        _ => Err(ErrorKind::InvalidInput),
+    }
+}
+
+#[test]
+fn column_number_test() {
+    assert_eq!(Ok(0), get_column_number("1"));
+    assert_eq!(Ok(13), get_column_number("14"));
+}
