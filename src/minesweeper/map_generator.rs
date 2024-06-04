@@ -1,4 +1,4 @@
-use rand::{Rng};
+use rand::Rng;
 
 #[derive(Clone, PartialEq)]
 pub enum TileState {
