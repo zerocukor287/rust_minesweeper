@@ -39,6 +39,7 @@ fn add_row_number_test() {
     assert_eq!("Z", add_row_number(25));
     assert_eq!("AA", add_row_number(26));
     assert_eq!("BA", add_row_number(52));
+    assert_eq!("IV", add_row_number(255));
 }
 
 fn number_of_spaces(width: u8) -> u8 {
@@ -46,18 +47,33 @@ fn number_of_spaces(width: u8) -> u8 {
     log
 }
 
+/// Generates the first row, aka header to the map
+/// 
+/// Empty string in case of 0, and then numbers separated by spaces.
+/// The number of the spaces depends on the maximum column number.
 fn add_first_line(width: u8) -> String {
     let mut line = String::new();
+    if width == 0 {
+        return line;
+    }
     let spaces = number_of_spaces (width) + 1;
     line.push(' ');
     for number in 0..width {
         line.push_str((number + 1).to_string().as_str());
         let digits = number_of_spaces(number + 1);
-        for _ in 0..spaces-digits {
+        for _ in 0..(spaces-digits) {
             line.push(' ');
         }
     }
     line
+}
+
+#[test]
+fn add_first_line_test() {
+    assert_eq!("", add_first_line(0));
+    assert_eq!(" 1 2 3 4 5 ", add_first_line(5));
+    assert_eq!(" 1  2  3  4  5  6  7  8  9  10 ", add_first_line(10));
+    assert_eq!(" 1  2  3  4  5  6  7  8  9  10 11 12 ", add_first_line(12));
 }
 
 fn generate_line(width: u8) -> String {
