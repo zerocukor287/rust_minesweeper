@@ -5,7 +5,7 @@ pub fn visualize_map(mine_map: Vec<Vec<TileState>>) -> String {
     let mut map = String::new();
     map.push_str(add_first_line(mine_map[0].len() as u8).as_str());
     map.push('\n');
-    for row in 0..(mine_map[0].len() as u8) {
+    for row in 0..(mine_map.len() as u8) {
         map.push_str(generate_line(&mine_map[row as usize]).as_str());
         map.push(' ');
         map.push_str(add_row_number(row).as_str());
