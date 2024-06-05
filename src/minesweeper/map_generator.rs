@@ -3,6 +3,7 @@ use rand::Rng;
 #[derive(Clone, PartialEq, Debug)]
 pub enum TileState {
     Mine,
+    MineDefused,
     HiddenEmpty(u8),
     VisibleEmpty(u8),
 }
@@ -36,7 +37,7 @@ pub fn fill_neighbours(mines: &mut Vec<Vec<TileState>>) {
         match tile {
             TileState::Mine => TileState::HiddenEmpty(1),
             TileState::HiddenEmpty(x) => TileState::HiddenEmpty(1 + x),
-            TileState::VisibleEmpty(_) => panic!("Generated a visible tile!"),
+            _ => panic!("Visible or defused tile"),
         }
     };
 

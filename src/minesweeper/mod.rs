@@ -3,3 +3,6 @@ pub use map_draw::*;
 
 mod map_generator;
 pub use map_generator::*;
+
+mod gameplay;
+pub use gameplay::*;

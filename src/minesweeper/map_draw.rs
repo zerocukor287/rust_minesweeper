@@ -140,7 +140,11 @@ fn generate_line(mine_line: &Vec<TileState>) -> String {
 
 pub fn get_column_number(input: &str) -> Result<u8, ErrorKind> {
     match input.parse::<u8>() {
-        Ok(num) => Ok(num-1),
+        Ok(num) => if num > 0 { 
+            Ok(num-1)
+        } else {
+            Err(ErrorKind::InvalidInput)
+        },
         _ => Err(ErrorKind::InvalidInput),
     }
 }
