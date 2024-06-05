@@ -11,8 +11,15 @@ fn main() {
 
     loop {
         // show map
-        println!("{}", visualize_map(&mines));
-
+        let (remaining, all) = get_progress(&mines);
+        let all = all + remaining;
+        println!("Progress: {remaining}/{all}");
+        if remaining == all {
+            println!("Success! All mines defused!");
+            println!("{}", visualize_map(&mines, 'X'));
+            break;
+        }
+        println!("{}", visualize_map(&mines, ' '));
         // get input
         let mut guess = String::new();
         io::stdin().read_line(&mut guess)
@@ -28,6 +35,7 @@ fn main() {
                         println!("That was a mine. Game over."); break;
                     },
                     MoveResult::SafeMove => continue,
+                    MoveResult::AlreadyRevealed => println!("Already revealed..."),
                     MoveResult::MakesNoSense => {
                         println!("I don't understand this.");
                     },

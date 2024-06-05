@@ -3,17 +3,33 @@ use std::io::ErrorKind;
 use super::map_generator::TileState;
 
 /// Generates a 2D map for minesweeper
-pub fn visualize_map(mine_map: &Vec<Vec<TileState>>) -> String {
+pub fn visualize_map(mine_map: &Vec<Vec<TileState>>, mine_char: char) -> String {
     let mut map = String::new();
     map.push_str(add_first_line(mine_map[0].len() as u8).as_str());
     map.push('\n');
     for row in 0..(mine_map.len() as u8) {
-        map.push_str(generate_line(&mine_map[row as usize]).as_str());
+        map.push_str(generate_line(&mine_map[row as usize], mine_char).as_str());
         map.push(' ');
         map.push_str(add_row_number(row).as_str());
         map.push('\n');
     }
     map
+}
+
+pub fn get_progress(mine_map: &Vec<Vec<TileState>>) -> (usize, usize) {
+    let mut visible_tiles = 0;
+    let mut remaining_tiles = 0;
+    for row in mine_map {
+        visible_tiles += row.iter().filter(|tile| match tile {
+            TileState::VisibleEmpty(_) => true,
+            _ => false
+        }).count();
+        remaining_tiles += row.iter().filter(|tile| match tile {
+            TileState::HiddenEmpty(_) => true,
+            _ => false
+        }).count();
+    }
+    (visible_tiles, remaining_tiles)
 }
 
 const MAX_ASCII_CHARACTERS: u8 = 26;    // chars A-Z
@@ -119,15 +135,15 @@ fn add_first_line_test() {
     assert_eq!(" 1  2  3  4  5  6  7  8  9  10 11 12 ", add_first_line(12));
 }
 
-fn generate_line(mine_line: &Vec<TileState>) -> String {
+fn generate_line(mine_line: &Vec<TileState>, mine_char: char) -> String {
     let mut line = String::new();
     let spaces = number_of_spaces (mine_line.len() as u8);
     line.push('|');
     for tile in mine_line.iter() {
         match tile {
-            TileState::Mine => line.push('o'),
+            TileState::Mine => line.push(mine_char),
             TileState::MineDefused => line.push('X'),
-            TileState::HiddenEmpty(_) => line.push('o'),
+            TileState::HiddenEmpty(_) => line.push(' '),
             TileState::VisibleEmpty(num) => line.push_str(num.to_string().as_str()), 
         }
         line.push('|');

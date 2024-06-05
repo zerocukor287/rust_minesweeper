@@ -9,7 +9,7 @@ pub fn print_welcome() {
     println!("Your task is to defuse all the mines.");
     println!("To reveal a tile, type the column and row - like \"A1\" or \"28BC\"");
     //println!("To mark as a potential mine, type \"mark\" with the position - like \"mark A1\" or \"mark 28BC\"");
-    println!("To defuse a mine, type \"def\" with the position - like \"def A1\" or \"def 28BC\"\n");
+    //println!("To defuse a mine, type \"def\" with the position - like \"def A1\" or \"def 28BC\"\n");
 
     println!("Here is the mine field:");
 }
@@ -18,6 +18,7 @@ pub enum MoveResult {
     Explosion,
     SafeMove,
     MakesNoSense,
+    AlreadyRevealed,
 }
 
 pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
@@ -25,7 +26,7 @@ pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
         TileState::Mine => return MoveResult::Explosion,
         TileState::MineDefused => return MoveResult::MakesNoSense,
         TileState::HiddenEmpty(x) => TileState::VisibleEmpty(x),
-        TileState::VisibleEmpty(_) => return MoveResult::MakesNoSense
+        TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed
     };
 
     // still any move left
