@@ -49,8 +49,7 @@ fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
             if row as usize >= mines.len() || column as usize >= mines[0].len() {
                 println!("That tile is not existing."); return true;
             }
-            let result = reveal_tile(row as usize, column as usize, mines);
-            match result {
+            match reveal_tile(row as usize, column as usize, mines) {
                 MoveResult::Explosion => {
                     return false;
                 },
@@ -61,7 +60,23 @@ fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
                 },
             }
         },
-        MoveType::Defuse { row, column } => todo!(),
+        MoveType::Defuse { row, column } => {
+            if row as usize >= mines.len() || column as usize >= mines[0].len() {
+                println!("That tile is not existing.");
+                return true;
+            }
+            match mark_tile(row as usize, column as usize, mines) {
+                MoveResult::Explosion => {
+                    return false;
+                },
+                MoveResult::SafeMove => (),
+                MoveResult::AlreadyRevealed => println!("Already revealed..."),
+                MoveResult::MakesNoSense => {
+                    println!("Type 'def' with position to remove the defuser.");
+                },
+            }
+        }
+,
     };
     true
 }

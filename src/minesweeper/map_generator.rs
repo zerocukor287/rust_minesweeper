@@ -3,7 +3,7 @@ use rand::Rng;
 #[derive(Clone, PartialEq, Debug)]
 pub enum TileState {
     Mine,
-    MineDefused,
+    Marked(bool),
     HiddenEmpty(u8),
     VisibleEmpty(u8),
 }
@@ -32,14 +32,6 @@ pub fn generate_map(width: u8, height: u8) -> Vec<Vec<TileState>> {
 }
 
 pub fn fill_neighbours(mines: &mut Vec<Vec<TileState>>) {
-    // fill the numbers for the neighbours of the mines
-    let add_one = |tile: &TileState| {
-        match tile {
-            TileState::Mine => TileState::HiddenEmpty(1),
-            TileState::HiddenEmpty(x) => TileState::HiddenEmpty(1 + x),
-            _ => panic!("Visible or defused tile"),
-        }
-    };
 
     let height = mines.len();
     let width = mines[0].len();
@@ -50,64 +42,80 @@ pub fn fill_neighbours(mines: &mut Vec<Vec<TileState>>) {
                 continue;   // no calculation, it is a mine
             }
 
-            // top row
-            if row > 0 {
-                let row_local = row-1;
-                // left
-                if column > 0 {
-                    if mines[row_local][column-1] == TileState::Mine {
-                        mines[row][column] = add_one(&mines[row][column]);
-                    }
-                }
-                // middle
-                if mines[row_local][column] == TileState::Mine {
-                    mines[row][column] = add_one(&mines[row][column]);
-                }
-                // right
-                if column+1 < width as usize {
-                    if mines[row_local][column+1] == TileState::Mine {
-                        mines[row][column] = add_one(&mines[row][column]);
-                    }
-                }
-            }
+            mines[row][column] = count_neigbour_mines(row, column, mines, height, width);
+        }
+    }
+}
 
-            // check this row
-            // left
-            if column > 0 {
-                if mines[row][column-1] == TileState::Mine {
-                    mines[row][column] = add_one(&mines[row][column]);
-                }
-            }
-            // right
-            if column+1 < width as usize {
-                if mines[row][column+1] == TileState::Mine {
-                    mines[row][column] = add_one(&mines[row][column]);
-                }
-            }
+fn add_one(tile: &TileState) -> TileState {
+ // fill the numbers for the neighbours of the mines
+    match tile {
+        TileState::Mine => TileState::HiddenEmpty(1),
+        TileState::HiddenEmpty(x) => TileState::HiddenEmpty(1 + x),
+        _ => panic!("Visible or defused tile"),
+    }
+}
 
-            // bottom row
-            if row+1 < height as usize {
-                let row_local = row+1;
-                // left
-                if column > 0 {
-                    if mines[row_local][column-1] == TileState::Mine {
-                        mines[row][column] = add_one(&mines[row][column]);
-                    }
-                }
-                // middle
-                if mines[row_local][column] == TileState::Mine {
-                    mines[row][column] = add_one(&mines[row][column]);
-                }
-                // right
-                if column+1 < width as usize {
-                    if mines[row_local][column+1] == TileState::Mine {
-                        mines[row][column] = add_one(&mines[row][column]);
-                    }
-                }
+pub fn count_neigbour_mines(row: usize, column: usize, mines: &mut Vec<Vec<TileState>>, height: usize, width: usize) -> TileState {    
+    let mut tile = TileState::HiddenEmpty(0);
+    
+    // top row
+    if row > 0 {
+        let row_local = row-1;
+        // left
+        if column > 0 {
+            if mines[row_local][column-1] == TileState::Mine {
+                tile = add_one(&tile);
+            }
+        }
+        // middle
+        if mines[row_local][column] == TileState::Mine {
+            tile = add_one(&tile);
+        }
+        // right
+        if column+1 < width as usize {
+            if mines[row_local][column+1] == TileState::Mine {
+                tile = add_one(&tile);
             }
         }
     }
-} 
+
+    // check this row
+    // left
+    if column > 0 {
+        if mines[row][column-1] == TileState::Mine {
+            tile = add_one(&tile);
+        }
+    }
+    // right
+    if column+1 < width as usize {
+        if mines[row][column+1] == TileState::Mine {
+            tile = add_one(&tile);
+        }
+    }
+
+    // bottom row
+    if row+1 < height as usize {
+        let row_local = row+1;
+        // left
+        if column > 0 {
+            if mines[row_local][column-1] == TileState::Mine {
+                tile = add_one(&tile);
+            }
+        }
+        // middle
+        if mines[row_local][column] == TileState::Mine {
+            tile = add_one(&tile);
+        }
+        // right
+        if column+1 < width as usize {
+            if mines[row_local][column+1] == TileState::Mine {
+                tile = add_one(&tile);
+            }
+        }
+    }
+    tile
+}
 
 #[test]
 fn generate_small_map() {

@@ -9,7 +9,8 @@ pub fn print_welcome() {
     println!("Your task is to defuse all the mines.");
     println!("To reveal a tile, type the column and row - like \"A1\" or \"28BC\"");
     //println!("To mark as a potential mine, type \"mark\" with the position - like \"mark A1\" or \"mark 28BC\"");
-    //println!("To defuse a mine, type \"def\" with the position - like \"def A1\" or \"def 28BC\"\n");
+    println!("To defuse a mine, type \"def\" with the position - like \"def A1\" or \"def 28BC\"\n");
+    println!("Type \"def\" with the position again to remove the defuser.\n");
 
     println!("Here is the mine field:");
 }
@@ -24,7 +25,7 @@ pub enum MoveResult {
 pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
     mine_map[row][column] = match mine_map[row][column]{
         TileState::Mine => return MoveResult::Explosion,
-        TileState::MineDefused => return MoveResult::MakesNoSense,
+        TileState::Marked(_) => return MoveResult::MakesNoSense,
         TileState::HiddenEmpty(x) => TileState::VisibleEmpty(x),
         TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed
     };
@@ -57,6 +58,18 @@ pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
         }
     }
     // still any move left
+    MoveResult::SafeMove
+}
+
+pub fn mark_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
+    let mines = crate::count_neigbour_mines(row, column, mine_map, mine_map.len(), mine_map[0].len());
+    mine_map[row][column] = match mine_map[row][column]{
+        TileState::Mine => TileState::Marked(true),
+        TileState::Marked(was_mine) => if was_mine {TileState::Mine} else {mines},
+        TileState::HiddenEmpty(_) => TileState::Marked(false),
+        TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed
+    };
+
     MoveResult::SafeMove
 }
 
