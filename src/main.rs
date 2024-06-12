@@ -35,6 +35,7 @@ fn main() {
             first_guess = false;
         } else {
             if !process_input(&guess, &mut mines) {
+                println!("That was a mine. Game over.");
                 break;
             }
         }   
@@ -51,7 +52,7 @@ fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
             let result = reveal_tile(row as usize, column as usize, mines);
             match result {
                 MoveResult::Explosion => {
-                    println!("That was a mine. Game over."); return false;
+                    return false;
                 },
                 MoveResult::SafeMove => (),
                 MoveResult::AlreadyRevealed => println!("Already revealed..."),
