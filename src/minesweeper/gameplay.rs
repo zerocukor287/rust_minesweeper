@@ -29,6 +29,33 @@ pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
         TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed
     };
 
+    // reveal neighbors
+    if mine_map[row][column] == TileState::VisibleEmpty(0) {
+        if row > 0 {
+            if column > 0 {
+                reveal_tile(row-1, column-1, mine_map);
+            }
+            reveal_tile(row-1, column, mine_map);
+            if column < mine_map[0].len() {
+                reveal_tile(row-1, column+1, mine_map);
+            }
+        }
+        if column > 0 {
+            reveal_tile(row, column-1, mine_map);
+        }
+        if column + 1 < mine_map[0].len() {
+            reveal_tile(row, column+1, mine_map);
+        }
+        if row + 1 < mine_map.len() {
+            if column > 0 {
+                reveal_tile(row+1, column-1, mine_map);
+            }
+            reveal_tile(row+1, column, mine_map);
+            if column < mine_map[0].len() {
+                reveal_tile(row+1, column+1, mine_map);
+            }
+        }
+    }
     // still any move left
     MoveResult::SafeMove
 }

@@ -32,8 +32,11 @@ fn main() {
                 mines = generate_map(8,6);
             }
             first_guess = false;
-        }
-        process_input(&guess, &mut mines);
+        } else {
+            if !process_input(&guess, &mut mines) {
+                break;
+            }
+        }   
     }
 }
 
@@ -41,6 +44,9 @@ fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
     match translate_move(&guess) {
         MoveType::Unknown => println!("I don't understand this."),
         MoveType::Reveal { row, column } => {
+            if row as usize >= mines.len() || column as usize >= mines[0].len() {
+                println!("That tile is not existing."); return true;
+            }
             let result = reveal_tile(row as usize, column as usize, mines);
             match result {
                 MoveResult::Explosion => {
