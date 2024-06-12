@@ -8,6 +8,7 @@ fn main() {
     
     let mut mines = generate_map(8,6);
     fill_neighbours(&mut mines);
+    let mut first_guess = true;
 
     loop {
         // show map
@@ -26,22 +27,33 @@ fn main() {
             .expect("Failed to read.");
 
         // process input
-        match translate_move(&guess) {
-            MoveType::Unknown => println!("I don't understand this."),
-            MoveType::Reveal { row, column } => {
-                let result = reveal_tile(row as usize, column as usize, &mut mines);
-                match result {
-                    MoveResult::Explosion => {
-                        println!("That was a mine. Game over."); break;
-                    },
-                    MoveResult::SafeMove => continue,
-                    MoveResult::AlreadyRevealed => println!("Already revealed..."),
-                    MoveResult::MakesNoSense => {
-                        println!("I don't understand this.");
-                    },
-                }
-            },
-            MoveType::Defuse { row, column } => todo!(),
-        };
+        if first_guess {
+            while !process_input(&guess, &mut mines) {
+                mines = generate_map(8,6);
+            }
+            first_guess = false;
+        }
+        process_input(&guess, &mut mines);
     }
+}
+
+fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
+    match translate_move(&guess) {
+        MoveType::Unknown => println!("I don't understand this."),
+        MoveType::Reveal { row, column } => {
+            let result = reveal_tile(row as usize, column as usize, mines);
+            match result {
+                MoveResult::Explosion => {
+                    println!("That was a mine. Game over."); return false;
+                },
+                MoveResult::SafeMove => (),
+                MoveResult::AlreadyRevealed => println!("Already revealed..."),
+                MoveResult::MakesNoSense => {
+                    println!("I don't understand this.");
+                },
+            }
+        },
+        MoveType::Defuse { row, column } => todo!(),
+    };
+    true
 }
