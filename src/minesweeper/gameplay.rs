@@ -36,7 +36,7 @@ pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
                 reveal_tile(row-1, column-1, mine_map);
             }
             reveal_tile(row-1, column, mine_map);
-            if column < mine_map[0].len() {
+            if column + 1 < mine_map[0].len() {
                 reveal_tile(row-1, column+1, mine_map);
             }
         }
@@ -51,7 +51,7 @@ pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
                 reveal_tile(row+1, column-1, mine_map);
             }
             reveal_tile(row+1, column, mine_map);
-            if column < mine_map[0].len() {
+            if column + 1 < mine_map[0].len() {
                 reveal_tile(row+1, column+1, mine_map);
             }
         }

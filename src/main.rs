@@ -30,6 +30,7 @@ fn main() {
         if first_guess {
             while !process_input(&guess, &mut mines) {
                 mines = generate_map(8,6);
+                fill_neighbours(&mut mines);
             }
             first_guess = false;
         } else {
