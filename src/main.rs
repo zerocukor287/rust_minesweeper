@@ -44,7 +44,7 @@ fn main() {
 
 fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
     match translate_move(&guess) {
-        MoveType::Unknown => println!("I don't understand this."),
+        MoveType::Unknown =>print_error_with_help(),
         MoveType::Reveal { row, column } => {
             if row as usize >= mines.len() || column as usize >= mines[0].len() {
                 println!("That tile is not existing."); return true;
@@ -56,7 +56,7 @@ fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
                 MoveResult::SafeMove => (),
                 MoveResult::AlreadyRevealed => println!("Already revealed..."),
                 MoveResult::MakesNoSense => {
-                    println!("I don't understand this.");
+                    print_error_with_help();
                 },
             }
         },
@@ -75,8 +75,7 @@ fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
                     println!("Type 'def' with position to remove the defuser.");
                 },
             }
-        }
-,
+        },
     };
     true
 }

@@ -1,5 +1,7 @@
 use std::io::ErrorKind;
 
+use regex::Regex;
+
 use super::map_generator::TileState;
 use super::map_draw::*;
 
@@ -7,12 +9,20 @@ pub fn print_welcome() {
     println!("Hello, minesweeper!\n");
 
     println!("Your task is to defuse all the mines.");
+    print_help();
+    println!("Here is the mine field:");
+}
+
+pub fn print_error_with_help() {
+    println!("I don't understand this.");
+    print_help()
+}
+
+pub fn print_help() {
     println!("To reveal a tile, type the column and row - like \"A1\" or \"28BC\"");
     //println!("To mark as a potential mine, type \"mark\" with the position - like \"mark A1\" or \"mark 28BC\"");
     println!("To defuse a mine, type \"def\" with the position - like \"def A1\" or \"def 28BC\"\n");
     println!("Type \"def\" with the position again to remove the defuser.\n");
-
-    println!("Here is the mine field:");
 }
 
 pub enum MoveResult {
@@ -81,18 +91,21 @@ pub enum MoveType {
 }
 
 pub fn translate_move(input: &str) -> MoveType {
+    let move_regex = Regex::new("^[0-9]+[a-zA-Z]+$|^[a-zA-Z]+[0-9]+$").unwrap();
     if input.starts_with("def ") {
         let index = parse_index(&input.trim()[4..]);
         match index {
             Ok((row, column)) => MoveType::Defuse { row, column },
             Err(_) => MoveType::Unknown,
         }
-    } else {
+    } else if move_regex.is_match(input.trim()) {
         let index = parse_index(&input);
         match index {
             Ok((row, column)) => MoveType::Reveal { row, column },
             Err(_) => MoveType::Unknown,
         }
+    } else {
+        MoveType::Unknown
     }
 }
 
@@ -109,8 +122,10 @@ fn parse_index(input: &str) -> Result<(u8, u8), ErrorKind> {
 #[test]
 fn translate_move_test() {
     assert_eq!(MoveType::Reveal{row: 0, column: 0}, translate_move("A1"));
+    assert_eq!(MoveType::Reveal{row: 0, column: 0}, translate_move("A1\n"));
     assert_eq!(MoveType::Defuse{row: 1, column: 1}, translate_move("def B2"));
     assert_eq!(MoveType::Defuse{row: 6, column: 4}, translate_move("def 5g"));
+    assert_eq!(MoveType::Unknown, translate_move("help"));
 }
 
 #[test]
