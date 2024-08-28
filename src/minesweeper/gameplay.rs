@@ -32,6 +32,44 @@ pub enum MoveResult {
     AlreadyRevealed,
 }
 
+pub fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
+    match translate_move(&guess) {
+        MoveType::Unknown =>print_error_with_help(),
+        MoveType::Reveal { row, column } => {
+            if row as usize >= mines.len() || column as usize >= mines[0].len() {
+                println!("That tile is not existing."); return true;
+            }
+            match reveal_tile(row as usize, column as usize, mines) {
+                MoveResult::Explosion => {
+                    return false;
+                },
+                MoveResult::SafeMove => (),
+                MoveResult::AlreadyRevealed => println!("Already revealed..."),
+                MoveResult::MakesNoSense => {
+                    print_error_with_help();
+                },
+            }
+        },
+        MoveType::Defuse { row, column } => {
+            if row as usize >= mines.len() || column as usize >= mines[0].len() {
+                println!("That tile is not existing.");
+                return true;
+            }
+            match mark_tile(row as usize, column as usize, mines) {
+                MoveResult::Explosion => {
+                    return false;
+                },
+                MoveResult::SafeMove => (),
+                MoveResult::AlreadyRevealed => println!("Already revealed..."),
+                MoveResult::MakesNoSense => {
+                    println!("Type 'def' with position to remove the defuser.");
+                },
+            }
+        },
+    };
+    true
+}
+
 pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
     mine_map[row][column] = match mine_map[row][column]{
         TileState::Mine => return MoveResult::Explosion,
