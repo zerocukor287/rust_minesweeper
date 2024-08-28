@@ -3,9 +3,10 @@ use rand::Rng;
 #[derive(Clone, PartialEq, Debug)]
 pub enum TileState {
     Mine,
-    Marked(bool),
+    Marked(i16),
     HiddenEmpty(u8),
     VisibleEmpty(u8),
+    Question(i16),
 }
 
 pub fn generate_map(width: u8, height: u8) -> Vec<Vec<TileState>> {

@@ -26,6 +26,7 @@ pub fn get_progress(mine_map: &Vec<Vec<TileState>>) -> (usize, usize) {
         }).count();
         remaining_tiles += row.iter().filter(|tile| match tile {
             TileState::HiddenEmpty(_) => true,
+            TileState::Question(num) => *num >= 0,
             _ => false
         }).count();
     }
@@ -144,7 +145,8 @@ fn generate_line(mine_line: &Vec<TileState>, mine_char: char) -> String {
             TileState::Mine => line.push(mine_char),
             TileState::Marked(_) => line.push(if mine_char == ' ' {'.'} else {mine_char}),
             TileState::HiddenEmpty(_) => line.push(' '),
-            TileState::VisibleEmpty(num) => if mine_char == ' ' { line.push_str(num.to_string().as_str()) } else {line.push(' ')}, 
+            TileState::VisibleEmpty(num) => if mine_char == ' ' { line.push_str(num.to_string().as_str()) } else {line.push(' ')},
+            TileState::Question(_) => line.push('?'),
         }
         line.push('|');
         for _ in 0..spaces {

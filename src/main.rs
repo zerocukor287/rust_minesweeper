@@ -12,10 +12,10 @@ fn main() {
 
     loop {
         // show map
-        let (remaining, all) = get_progress(&mines);
-        let all = all + remaining;
-        println!("Progress: {remaining}/{all}");
-        if remaining == all {
+        let (visible, remaing) = get_progress(&mines);
+        let all = remaing + visible;
+        println!("Progress: {visible}/{all}");
+        if visible == all {
             println!("Success! All mines defused!");
             println!("{}", visualize_map(&mines, 'X'));
             break;

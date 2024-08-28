@@ -20,7 +20,7 @@ pub fn print_error_with_help() {
 
 pub fn print_help() {
     println!("To reveal a tile, type the column and row - like \"A1\" or \"28BC\"");
-    //println!("To mark as a potential mine, type \"mark\" with the position - like \"mark A1\" or \"mark 28BC\"");
+    println!("To mark as a potential mine, type \"mark\" with the position - like \"mark A1\" or \"mark 28BC\"");
     println!("To defuse a mine, type \"def\" with the position - like \"def A1\" or \"def 28BC\"\n");
     println!("Type \"def\" with the position again to remove the defuser.\n");
 }
@@ -55,7 +55,7 @@ pub fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
                 println!("That tile is not existing.");
                 return true;
             }
-            match mark_tile(row as usize, column as usize, mines) {
+            match defuse_tile(row as usize, column as usize, mines) {
                 MoveResult::Explosion => {
                     return false;
                 },
@@ -66,6 +66,22 @@ pub fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
                 },
             }
         },
+        MoveType::Mark { row, column } => {
+            if row as usize >= mines.len() || column as usize >= mines[0].len() {
+                println!("That tile is not existing.");
+                return true;
+            }
+            match mark_tile(row as usize, column as usize, mines) {
+                MoveResult::Explosion => {
+                    return false;
+                },
+                MoveResult::SafeMove => (),
+                MoveResult::AlreadyRevealed => println!("Already revealed..."),
+                MoveResult::MakesNoSense => {
+                    println!("Type 'def' with position to remove the defuser.");
+                },
+            }
+        }
     };
     true
 }
@@ -75,7 +91,8 @@ pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
         TileState::Mine => return MoveResult::Explosion,
         TileState::Marked(_) => return MoveResult::MakesNoSense,
         TileState::HiddenEmpty(x) => TileState::VisibleEmpty(x),
-        TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed
+        TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed,
+        TileState::Question(x) => if x < 0 { return MoveResult::Explosion } else { TileState::VisibleEmpty(x as u8) },
     };
 
     // reveal neighbors
@@ -109,13 +126,25 @@ pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
     MoveResult::SafeMove
 }
 
-pub fn mark_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
-    let mines = crate::count_neigbour_mines(row, column, mine_map, mine_map.len(), mine_map[0].len());
+pub fn defuse_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
     mine_map[row][column] = match mine_map[row][column]{
-        TileState::Mine => TileState::Marked(true),
-        TileState::Marked(was_mine) => if was_mine {TileState::Mine} else {mines},
-        TileState::HiddenEmpty(_) => TileState::Marked(false),
-        TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed
+        TileState::Mine => TileState::Marked(-1),
+        TileState::Marked(num) => if num < 0 {TileState::Mine} else {TileState::HiddenEmpty(num as u8)},
+        TileState::HiddenEmpty(num) => TileState::Marked(num as i16),
+        TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed,
+        TileState::Question(x) => TileState::Marked(x),
+    };
+
+    MoveResult::SafeMove
+}
+
+pub fn mark_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
+    mine_map[row][column] = match mine_map[row][column]{
+        TileState::Mine => TileState::Question(-1),
+        TileState::Marked(num) => TileState::Question(num),
+        TileState::HiddenEmpty(num) => TileState::Question(num as i16),
+        TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed,
+        TileState::Question(x) => if x < 0 { TileState::Mine } else { TileState::HiddenEmpty(x as u8) },
     };
 
     MoveResult::SafeMove
@@ -126,6 +155,7 @@ pub enum MoveType {
     Unknown,
     Reveal{row: u8, column: u8},
     Defuse{row: u8, column: u8},
+    Mark{row: u8, column: u8}
 }
 
 pub fn translate_move(input: &str) -> MoveType {
@@ -134,6 +164,12 @@ pub fn translate_move(input: &str) -> MoveType {
         let index = parse_index(&input.trim()[4..]);
         match index {
             Ok((row, column)) => MoveType::Defuse { row, column },
+            Err(_) => MoveType::Unknown,
+        }
+    } else if input.starts_with("mark ") {
+        let index = parse_index(&input.trim()[5..]);
+        match index {
+            Ok((row, column)) => MoveType::Mark { row, column },
             Err(_) => MoveType::Unknown,
         }
     } else if move_regex.is_match(input.trim()) {
@@ -163,6 +199,8 @@ fn translate_move_test() {
     assert_eq!(MoveType::Reveal{row: 0, column: 0}, translate_move("A1\n"));
     assert_eq!(MoveType::Defuse{row: 1, column: 1}, translate_move("def B2"));
     assert_eq!(MoveType::Defuse{row: 6, column: 4}, translate_move("def 5g"));
+    assert_eq!(MoveType::Mark{row: 6, column: 1}, translate_move("mark 2g"));
+    assert_eq!(MoveType::Mark{row: 2, column: 13}, translate_move("mark   c14   "));
     assert_eq!(MoveType::Unknown, translate_move("help"));
 }
 
