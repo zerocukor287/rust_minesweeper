@@ -1,4 +1,4 @@
-use std::io::ErrorKind;
+use std::io::{self, ErrorKind};
 
 use regex::Regex;
 
@@ -14,7 +14,7 @@ pub fn print_welcome() {
 }
 
 pub fn print_error_with_help() {
-    println!("I don't understand this.");
+    println!("I don't understand this.\n");
     print_help()
 }
 
@@ -23,6 +23,30 @@ pub fn print_help() {
     println!("To mark as a potential mine, type \"mark\" with the position - like \"mark A1\" or \"mark 28BC\"");
     println!("To defuse a mine, type \"def\" with the position - like \"def A1\" or \"def 28BC\"\n");
     println!("Type \"def\" with the position again to remove the defuser.\n");
+    println!("If you want to close the game, type 'q', 'quit' or 'exit'\n");
+}
+
+pub fn want_to_quit(input: &str) -> bool {
+    let lower_guess = input.trim().to_lowercase();
+    lower_guess == "q" || lower_guess == "quit" || lower_guess == "exit"
+}
+
+pub fn restart(input: &str) -> bool {
+    let lower_guess = input.trim().to_lowercase();
+    lower_guess == "restart"
+}
+
+pub fn start_again() -> bool {
+    let possible_inputs_no: [&str; 2] = ["n", "no"];
+    let possible_inputs_yes: [&str; 2] = ["y", "yes"];
+    let mut input = String::new();
+    while !want_to_quit(&input) && !possible_inputs_no.contains(&input.trim()) && !possible_inputs_yes.contains(&input.trim()) {
+        input.clear();
+        println!("Do you want to start again? (y/n)");
+        io::stdin().read_line(&mut input)
+            .expect("Failed to read.");
+    }
+    possible_inputs_yes.contains(&input.trim())
 }
 
 pub enum MoveResult {
