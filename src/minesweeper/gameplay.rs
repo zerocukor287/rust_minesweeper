@@ -36,6 +36,22 @@ pub fn restart(input: &str) -> bool {
     lower_guess == "restart"
 }
 
+pub fn get_size() -> (u8, u8) {
+    println!("How big map would you like? s (default), m, l, xl");
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)
+        .expect("Failed to read.");
+
+    if input.trim().to_lowercase() == "m" {
+        return (10, 8);
+    } else if input.trim().to_lowercase() == "l" {
+        return (15, 13);
+    } else if input.trim().to_lowercase() == "xl" {
+        return (35, 30);
+    }
+    (6, 5)
+}
+
 pub fn start_again() -> bool {
     let possible_inputs_no: [&str; 2] = ["n", "no"];
     let possible_inputs_yes: [&str; 2] = ["y", "yes"];

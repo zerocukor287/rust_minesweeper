@@ -8,7 +8,8 @@ fn main() {
 
     let mut still_playing = true;
     while still_playing {
-        let mut mines = generate_map(8,6);
+        let (width, height) = get_size();
+        let mut mines = generate_map(width,height);
         fill_neighbours(&mut mines);
         let mut first_guess = true;
 
