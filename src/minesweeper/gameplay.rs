@@ -131,15 +131,32 @@ pub fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
     true
 }
 
+fn best_hint(mines: &Vec<Vec<TileState>>) -> i16 {
+    let mut best_hidden: i16 = 9;    // 8 is max
+    for line in mines {
+        for tile in line {
+            match tile {
+                TileState::Marked(num) => if *num > 0 && *num < best_hidden {best_hidden = *num;},
+                TileState::HiddenEmpty(num ) => if i16::from(*num) < best_hidden {best_hidden = (*num) as i16;},
+                TileState::Question(num) => if *num > 0 && *num < best_hidden {best_hidden = *num;},
+                _ => {},
+            }
+        }
+    }
+    best_hidden
+}
+
 pub fn show_hint( mines: &mut Vec<Vec<TileState>>) -> MoveResult {
+    let best_hidden = best_hint(mines);
+
     let rand_column = rand::thread_rng().gen_range(0..=mines[0].len()-1);
     let rand_row = rand::thread_rng().gen_range(0..=mines.len()-1);
     match mines[rand_row][rand_column] {
         TileState::Mine => show_hint(mines),
-        TileState::Marked(num) => if num < 0 {show_hint(mines)} else {defuse_tile(rand_row, rand_column, mines);reveal_tile(rand_row, rand_column, mines, true)},
-        TileState::HiddenEmpty(_) => reveal_tile(rand_row, rand_column, mines, true),
+        TileState::Marked(num) => if num < 0 || num != best_hidden {show_hint(mines)} else {defuse_tile(rand_row, rand_column, mines);reveal_tile(rand_row, rand_column, mines, true)},
+        TileState::HiddenEmpty(num) => if i16::from(num) == best_hidden { reveal_tile(rand_row, rand_column, mines, true) } else { show_hint(mines) },
         TileState::VisibleEmpty(_) => show_hint(mines),
-        TileState::Question(num) => if num < 0 {show_hint(mines)} else {reveal_tile(rand_row, rand_column, mines, true)},
+        TileState::Question(num) => if num < 0 || num != best_hidden {show_hint(mines)} else {reveal_tile(rand_row, rand_column, mines, true)},
     }
 }
 
