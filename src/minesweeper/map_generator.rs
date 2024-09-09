@@ -1,5 +1,8 @@
 use rand::Rng;
 
+#[cfg(test)]
+use crate::reveal_tile;
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum TileState {
     Mine,
@@ -139,4 +142,53 @@ fn fill_neighbours_test() {
     assert_eq!(TileState::HiddenEmpty(1), test_map[0][0]);
     assert_eq!(TileState::HiddenEmpty(1), test_map[1][0]);
     assert_eq!(TileState::HiddenEmpty(1), test_map[1][1]);
+}
+
+#[test]
+fn bug_1_fill_neighbours_test() {
+    let row_1 = vec![TileState::HiddenEmpty(0), TileState::Mine, TileState::HiddenEmpty(0)];
+    let row_2 = vec![TileState::Mine, TileState::HiddenEmpty(0), TileState::HiddenEmpty(0)];
+    let row_3 = vec![TileState::Mine, TileState::Mine, TileState::Mine];
+    let mut test_map = vec![row_1, row_2, row_3];
+
+    assert_eq!(test_map.len(), 3);
+
+    fill_neighbours(&mut test_map);
+
+    assert_eq!(test_map[1][1], TileState::HiddenEmpty(5));
+    // ----------
+    let mut mine_map = parse_map(
+" |  |  |  |  |  |  | *|  |  
+*|  | *|  |  |  | *| *|  |  
+ |  |  |  |  |  |  |  | *|  
+ |  |  |  | *|  |  |  |  |  
+ | *|  | *|  |  |  | *|  |  
+ |  |  | *| *| *|  |  | *|  
+ |  | *|  | *| *|  |  |  | *
+*|  |  |  |  | *|  | *|  |  ");
+    fill_neighbours(&mut mine_map);
+
+    assert_eq!(mine_map[4][4], TileState::HiddenEmpty(5));
+
+    reveal_tile(4, 4, &mut mine_map);
+
+    assert_eq!(mine_map[4][4], TileState::VisibleEmpty(5));
+}
+
+#[cfg(test)]
+fn parse_map(input: &str) -> Vec<Vec<TileState>> {
+    let mut mine_map:Vec<Vec<TileState>> = Vec::new();
+    for input_line in input.lines() {
+        let mut mine_line: Vec<TileState>= Vec::new();
+        for token in input_line.split('|') {
+            if token.trim() == "*" {
+                mine_line.push(TileState::Mine);
+            } else {
+                mine_line.push(TileState::HiddenEmpty(0));
+            }
+        }
+        mine_map.push(mine_line);
+    }
+
+    mine_map
 }
