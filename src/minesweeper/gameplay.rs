@@ -81,7 +81,7 @@ pub fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
             if row as usize >= mines.len() || column as usize >= mines[0].len() {
                 println!("That tile is not existing."); return true;
             }
-            match reveal_tile(row as usize, column as usize, mines) {
+            match reveal_tile(row as usize, column as usize, mines, false) {
                 MoveResult::Explosion => {
                     return false;
                 },
@@ -136,17 +136,22 @@ pub fn show_hint( mines: &mut Vec<Vec<TileState>>) -> MoveResult {
     let rand_row = rand::thread_rng().gen_range(0..=mines.len()-1);
     match mines[rand_row][rand_column] {
         TileState::Mine => show_hint(mines),
-        TileState::Marked(num) => if num < 0 {show_hint(mines)} else {reveal_tile(rand_row, rand_column, mines)},
-        TileState::HiddenEmpty(_) => reveal_tile(rand_row, rand_column, mines),
+        TileState::Marked(num) => if num < 0 {show_hint(mines)} else {defuse_tile(rand_row, rand_column, mines);reveal_tile(rand_row, rand_column, mines, true)},
+        TileState::HiddenEmpty(_) => reveal_tile(rand_row, rand_column, mines, true),
         TileState::VisibleEmpty(_) => show_hint(mines),
-        TileState::Question(num) => if num < 0 {show_hint(mines)} else {reveal_tile(rand_row, rand_column, mines)},
+        TileState::Question(num) => if num < 0 {show_hint(mines)} else {reveal_tile(rand_row, rand_column, mines, true)},
     }
 }
 
-pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
+pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>, force: bool) -> MoveResult {
     mine_map[row][column] = match mine_map[row][column]{
         TileState::Mine => return MoveResult::Explosion,
-        TileState::Marked(_) => return MoveResult::MakesNoSense,
+        TileState::Marked(num) =>
+            if !force || num < 0 {
+                return MoveResult::MakesNoSense
+            } else {
+                TileState::VisibleEmpty(num as u8)
+            }
         TileState::HiddenEmpty(x) => TileState::VisibleEmpty(x),
         TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed,
         TileState::Question(x) => if x < 0 { return MoveResult::Explosion } else { TileState::VisibleEmpty(x as u8) },
@@ -156,26 +161,26 @@ pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
     if mine_map[row][column] == TileState::VisibleEmpty(0) {
         if row > 0 {
             if column > 0 {
-                reveal_tile(row-1, column-1, mine_map);
+                reveal_tile(row-1, column-1, mine_map, true);
             }
-            reveal_tile(row-1, column, mine_map);
+            reveal_tile(row-1, column, mine_map, true);
             if column + 1 < mine_map[0].len() {
-                reveal_tile(row-1, column+1, mine_map);
+                reveal_tile(row-1, column+1, mine_map, true);
             }
         }
         if column > 0 {
-            reveal_tile(row, column-1, mine_map);
+            reveal_tile(row, column-1, mine_map, true);
         }
         if column + 1 < mine_map[0].len() {
-            reveal_tile(row, column+1, mine_map);
+            reveal_tile(row, column+1, mine_map, true);
         }
         if row + 1 < mine_map.len() {
             if column > 0 {
-                reveal_tile(row+1, column-1, mine_map);
+                reveal_tile(row+1, column-1, mine_map, true);
             }
-            reveal_tile(row+1, column, mine_map);
+            reveal_tile(row+1, column, mine_map, true);
             if column + 1 < mine_map[0].len() {
-                reveal_tile(row+1, column+1, mine_map);
+                reveal_tile(row+1, column+1, mine_map, true);
             }
         }
     }
@@ -271,4 +276,15 @@ fn parse_index_test() {
 
     assert_eq!(Ok((1,0)), parse_index("B1"));
     assert_eq!(Ok((1,0)), parse_index("1b"));
+}
+
+#[test]
+fn double_defuse() {
+    let row_1 = vec![TileState::HiddenEmpty(0)];
+    let mut test_map = vec![row_1];
+
+    defuse_tile(0, 0, &mut test_map);
+    defuse_tile(0, 0, &mut test_map);
+
+    assert_eq!(test_map[0][0], TileState::HiddenEmpty(0));
 }

@@ -31,22 +31,24 @@ pub fn generate_map(width: u8, height: u8) -> Vec<Vec<TileState>> {
         }
         ret.push(row);
     }
-
+    fill_neighbours(&mut ret);
     ret
 }
 
-pub fn fill_neighbours(mines: &mut Vec<Vec<TileState>>) {
+fn fill_neighbours(mines: &mut Vec<Vec<TileState>>) {
 
     let height = mines.len();
-    let width = mines[0].len();
+    if height > 0 {
+        let width = mines[0].len();
 
-    for row in 0..height {
-        for column in 0..width {
-            if mines[row][column] == TileState::Mine {
-                continue;   // no calculation, it is a mine
+        for row in 0..height {
+            for column in 0..width {
+                if mines[row][column] == TileState::Mine {
+                    continue;   // no calculation, it is a mine
+                }
+
+                mines[row][column] = count_neigbour_mines(row, column, mines, height, width);
             }
-
-            mines[row][column] = count_neigbour_mines(row, column, mines, height, width);
         }
     }
 }
@@ -170,7 +172,7 @@ fn bug_1_fill_neighbours_test() {
 
     assert_eq!(mine_map[4][4], TileState::HiddenEmpty(5));
 
-    reveal_tile(4, 4, &mut mine_map);
+    reveal_tile(4, 4, &mut mine_map, false);
 
     assert_eq!(mine_map[4][4], TileState::VisibleEmpty(5));
 }

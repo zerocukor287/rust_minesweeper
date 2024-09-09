@@ -10,7 +10,6 @@ fn main() {
     while still_playing {
         let (width, height) = get_size();
         let mut mines = generate_map(width,height);
-        fill_neighbours(&mut mines);
         let mut first_guess = true;
 
         let (mut visible, mut remaing) = get_progress(&mines);
@@ -18,7 +17,7 @@ fn main() {
         while visible != all {
             // show map    
             println!("Progress: {visible}/{all}");
-            println!("{}", visualize_map(&mines, ' '));
+            println!("{}", visualize_map(&mines, ' ', true));
             // get input
             let mut guess = String::new();
             io::stdin().read_line(&mut guess)
@@ -33,13 +32,12 @@ fn main() {
             } else if first_guess {
                 while !process_input(&guess, &mut mines) {
                     mines = generate_map(width,height);
-                    fill_neighbours(&mut mines);
                 }
                 first_guess = false;
             } else {
                 if !process_input(&guess, &mut mines) {
                     println!("That was a mine. Game over.");
-                    println!("{}", visualize_map(&mines, '*'));
+                    println!("{}", visualize_map(&mines, '*', true));
                     still_playing = start_again();
                     break;
                 }
@@ -50,7 +48,7 @@ fn main() {
         }
         if visible == all {
             println!("Success! All mines defused!");
-            println!("{}", visualize_map(&mines, 'X'));
+            println!("{}", visualize_map(&mines, 'X', false));
             still_playing = start_again();
         }
     }

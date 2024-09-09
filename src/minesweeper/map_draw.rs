@@ -3,12 +3,12 @@ use std::io::ErrorKind;
 use super::map_generator::TileState;
 
 /// Generates a 2D map for minesweeper
-pub fn visualize_map(mine_map: &Vec<Vec<TileState>>, mine_char: char) -> String {
+pub fn visualize_map(mine_map: &Vec<Vec<TileState>>, mine_char: char, show_revealed: bool) -> String {
     let mut map = String::new();
     map.push_str(add_first_line(mine_map[0].len() as u8).as_str());
     map.push('\n');
     for row in 0..(mine_map.len() as u8) {
-        map.push_str(generate_line(&mine_map[row as usize], mine_char).as_str());
+        map.push_str(generate_line(&mine_map[row as usize], mine_char, show_revealed).as_str());
         map.push(' ');
         map.push_str(add_row_number(row).as_str());
         map.push('\n');
@@ -27,6 +27,7 @@ pub fn get_progress(mine_map: &Vec<Vec<TileState>>) -> (usize, usize) {
         remaining_tiles += row.iter().filter(|tile| match tile {
             TileState::HiddenEmpty(_) => true,
             TileState::Question(num) => *num >= 0,
+            TileState::Marked(num) => *num >= 0,
             _ => false
         }).count();
     }
@@ -136,16 +137,19 @@ fn add_first_line_test() {
     assert_eq!(" 1  2  3  4  5  6  7  8  9  10 11 12 ", add_first_line(12));
 }
 
-fn generate_line(mine_line: &Vec<TileState>, mine_char: char) -> String {
+fn generate_line(mine_line: &Vec<TileState>, mine_char: char, show_revealed: bool) -> String {
     let mut line = String::new();
     let spaces = number_of_spaces (mine_line.len() as u8);
     line.push('|');
+    for _ in 0..spaces {
+        line.push(' ');
+    }
     for tile in mine_line.iter() {
         match tile {
             TileState::Mine => line.push(mine_char),
             TileState::Marked(_) => line.push(if mine_char == ' ' {'.'} else {mine_char}),
             TileState::HiddenEmpty(_) => line.push(' '),
-            TileState::VisibleEmpty(num) => if mine_char == ' ' { line.push_str(num.to_string().as_str()) } else {line.push(' ')},
+            TileState::VisibleEmpty(num) => if show_revealed { line.push_str(num.to_string().as_str()) } else {line.push(' ')},
             TileState::Question(_) => line.push('?'),
         }
         line.push('|');
