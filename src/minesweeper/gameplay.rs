@@ -1,5 +1,6 @@
 use std::io::{self, ErrorKind};
 
+use rand::Rng;
 use regex::Regex;
 
 use super::map_generator::TileState;
@@ -23,6 +24,7 @@ pub fn print_help() {
     println!("To mark as a potential mine, type \"mark\" with the position - like \"mark A1\" or \"mark 28BC\"");
     println!("To defuse a mine, type \"def\" with the position - like \"def A1\" or \"def 28BC\"\n");
     println!("Type \"def\" with the position again to remove the defuser.\n");
+    println!("You can use a hint, type \"hint\" to reveal a random tile\n");
     println!("If you want to close the game, type 'q', 'quit' or 'exit'\n");
 }
 
@@ -121,9 +123,24 @@ pub fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
                     println!("Type 'def' with position to remove the defuser.");
                 },
             }
+        },
+        MoveType::Hint => {
+            show_hint(mines);
         }
     };
     true
+}
+
+pub fn show_hint( mines: &mut Vec<Vec<TileState>>) -> MoveResult {
+    let rand_column = rand::thread_rng().gen_range(0..=mines[0].len()-1);
+    let rand_row = rand::thread_rng().gen_range(0..=mines.len()-1);
+    match mines[rand_row][rand_column] {
+        TileState::Mine => show_hint(mines),
+        TileState::Marked(num) => if num < 0 {show_hint(mines)} else {reveal_tile(rand_row, rand_column, mines)},
+        TileState::HiddenEmpty(_) => reveal_tile(rand_row, rand_column, mines),
+        TileState::VisibleEmpty(_) => show_hint(mines),
+        TileState::Question(num) => if num < 0 {show_hint(mines)} else {reveal_tile(rand_row, rand_column, mines)},
+    }
 }
 
 pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
@@ -193,6 +210,7 @@ pub fn mark_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) 
 #[derive(PartialEq, Debug)]
 pub enum MoveType {
     Unknown,
+    Hint,
     Reveal{row: u8, column: u8},
     Defuse{row: u8, column: u8},
     Mark{row: u8, column: u8}
@@ -212,6 +230,8 @@ pub fn translate_move(input: &str) -> MoveType {
             Ok((row, column)) => MoveType::Mark { row, column },
             Err(_) => MoveType::Unknown,
         }
+    } else if input.starts_with("hint") {
+        MoveType::Hint
     } else if move_regex.is_match(input.trim()) {
         let index = parse_index(&input);
         match index {
