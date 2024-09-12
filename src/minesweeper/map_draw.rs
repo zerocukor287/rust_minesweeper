@@ -147,7 +147,7 @@ fn generate_line(mine_line: &Vec<TileState>, mine_char: char, show_revealed: boo
     for tile in mine_line.iter() {
         match tile {
             TileState::Mine => line.push(mine_char),
-            TileState::Marked(_) => line.push(if mine_char == ' ' {'.'} else {mine_char}),
+            TileState::Marked(num) => line.push(if mine_char == ' ' {'.'} else { if *num < 0 {mine_char} else { 'M' }}),
             TileState::HiddenEmpty(_) => line.push(' '),
             TileState::VisibleEmpty(num) => if show_revealed { line.push_str(num.to_string().as_str()) } else {line.push(' ')},
             TileState::Question(_) => line.push('?'),

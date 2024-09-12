@@ -177,6 +177,27 @@ fn bug_1_fill_neighbours_test() {
     assert_eq!(mine_map[4][4], TileState::VisibleEmpty(5));
 }
 
+#[test]
+fn bug_1_fill_neighbours_again() {
+    let mut mine_map = parse_map(
+" 0| 1| *| *| 1| 2| *| 3| 1| 2|  |  |  |  |  
+ 0| 1| 2| 2| 1| 2| *| 3| *| 2| *|  |  |  | *
+ 0| 0| 0| 0| 1| 2| 2| 3| *|  |  |  |  |  |  
+ 0| 0| 1| 1| 2| *| 2| 2| *|  | *|  |  |  |  
+ 0| 1| 2| *| 4| 5| *|  |  |  |  | *| *|  |  
+ 1| 2| *| 4| *| *| *|  |  |  |  |  | *|  |  
+ *|  | 2| *|  | *|  |  |  |  |  |  | *|  |  
+  |  |  |  |  | *|  |  |  | *|  |  |  |  |  
+ *|  |  |  | *|  | *| *| *| *| *|  | *| *|  
+  |  |  |  |  |  | *| *|  |  |  |  |  |  |  
+  |  | *|  |  | *|  | *|  |  | *|  |  |  |  
+  |  |  | *|  |  |  | *|  |  | *|  |  |  | *
+ *|  |  |  | *|  |  |  | *|  | *|  |  |  |  ");
+    fill_neighbours(&mut mine_map);
+
+    assert_eq!(mine_map[1][7], TileState::HiddenEmpty(4));
+}
+
 #[cfg(test)]
 fn parse_map(input: &str) -> Vec<Vec<TileState>> {
     let mut mine_map:Vec<Vec<TileState>> = Vec::new();

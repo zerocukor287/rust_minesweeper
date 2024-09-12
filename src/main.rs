@@ -8,6 +8,7 @@ fn main() {
 
     let mut still_playing = true;
     while still_playing {
+        print_stats(&get_stats());
         let (width, height) = get_size();
         let mut mines = generate_map(width,height);
         let mut first_guess = true;
@@ -38,6 +39,15 @@ fn main() {
                 if !process_input(&guess, &mut mines) {
                     println!("That was a mine. Game over.");
                     println!("{}", visualize_map(&mines, '*', true));
+                    // defused so far
+                    let mut defused: usize = 0;
+                    for row in &mines {
+                        defused += row.iter().filter(|tile| match tile {
+                            TileState::Marked(num) => *num < 0,
+                            _ => false
+                        }).count();
+                    }
+                    save_stats(defused, visible, true);
                     still_playing = start_again();
                     break;
                 }
@@ -49,7 +59,10 @@ fn main() {
         if visible == all {
             println!("Success! All mines defused!");
             println!("{}", visualize_map(&mines, 'X', false));
+            let total = mines.len() * mines[0].len();
+            save_stats(total - visible, visible, false);
             still_playing = start_again();
         }
     }
+    print_stats(&get_stats());
 }

@@ -6,3 +6,6 @@ pub use map_generator::*;
 
 mod gameplay;
 pub use gameplay::*;
+
+mod stats;
+pub use stats::*;
