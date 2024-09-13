@@ -11,7 +11,6 @@ pub fn print_welcome() {
 
     println!("Your task is to defuse all the mines.");
     print_help();
-    println!("Here is the mine field:");
 }
 
 pub fn print_error_with_help() {

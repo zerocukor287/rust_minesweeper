@@ -9,6 +9,7 @@ fn main() {
     let mut still_playing = true;
     while still_playing {
         print_stats(&get_stats());
+        println!("Here is the mine field:");
         let (width, height) = get_size();
         let mut mines = generate_map(width,height);
         let mut first_guess = true;
