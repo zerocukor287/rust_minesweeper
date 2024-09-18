@@ -54,8 +54,16 @@ fn add_row_number(row: u8) -> String {
 }
 
 pub fn get_row_number(input: &str) -> Result<u8, ErrorKind> {
-    if input.is_empty() {
+    if input.is_empty() || input.len() > 2 {
         return Err(ErrorKind::InvalidInput);
+    }
+    // max can be IV
+    if input.len() == 2 {
+        if input.chars().nth(0).unwrap() > 'I' {
+            return Err(ErrorKind::InvalidInput);
+        } else if input.chars().nth(0).unwrap() == 'I' && input.chars().nth(1).unwrap() > 'V' {
+            return Err(ErrorKind::InvalidInput);
+        }
     }
     let mut sum = 0;
     let mut first = true;
