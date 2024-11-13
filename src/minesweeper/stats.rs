@@ -1,4 +1,4 @@
-use std::fs::{self, File};
+use std::fs::{self, create_dir, File};
 use std::path::Path;
 use std::io::Write;
 
@@ -11,6 +11,7 @@ pub struct Stats {
 }
 
 const STATS_VERSION: u32 = 1;
+const STATS_DIR: &str = "data/";
 const STATS_PATH: &str = "data/stats.json";
 
 pub fn save_stats(defused: usize, revealed: usize, exploded: bool) {
@@ -37,6 +38,11 @@ pub fn save_stats(defused: usize, revealed: usize, exploded: bool) {
 }
 
 pub fn get_stats() -> Stats {
+    let stats_dir = Path::new(STATS_DIR);
+    if !stats_dir.exists() {
+        let _ = create_dir(stats_dir);
+    }
+
     if Path::new(STATS_PATH).exists() {
         let data = fs::read_to_string(STATS_PATH).expect("Failed to read an existing file");
         

@@ -58,6 +58,7 @@ pub fn get_row_number(input: &str) -> Result<u8, ErrorKind> {
         return Err(ErrorKind::InvalidInput);
     }
     // max can be IV
+    let input = input.to_uppercase();
     if input.len() == 2 {
         if input.chars().nth(0).unwrap() > 'I' {
             return Err(ErrorKind::InvalidInput);
@@ -65,6 +66,7 @@ pub fn get_row_number(input: &str) -> Result<u8, ErrorKind> {
             return Err(ErrorKind::InvalidInput);
         }
     }
+    // calculate numeric value
     let mut sum = 0;
     let mut first = true;
     for ch in input.chars() {
@@ -102,6 +104,7 @@ fn get_row_number_test() {
     assert_eq!(Ok(52), get_row_number("bA"));
     assert_eq!(Ok(52), get_row_number("ba"));
     assert_eq!(Ok(255), get_row_number("IV"));
+    assert_eq!(Ok(255), get_row_number("iv"));
 }
 
 #[test]

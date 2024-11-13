@@ -6,6 +6,11 @@ use regex::Regex;
 use super::map_generator::TileState;
 use super::map_draw::*;
 
+static QUIT_COMMANDS: [&str; 3] = ["q", "quit", "exit"];
+static RESTART_COMMANDS: [&str; 1] = ["restart"];
+static HINT_COMMANDS: [&str; 1] = ["hint"];
+static MAP_SIZE: [&str; 4] = ["s", "m", "l", "xl"];
+
 pub fn print_welcome() {
     println!("Hello, minesweeper!\n");
 
@@ -23,34 +28,65 @@ pub fn print_help() {
     println!("To mark as a potential mine, type \"mark\" with the position - like \"mark A1\" or \"mark 28BC\"");
     println!("To defuse a mine, type \"def\" with the position - like \"def A1\" or \"def 28BC\"\n");
     println!("Type \"def\" with the position again to remove the defuser.\n");
-    println!("You can use a hint, type \"hint\" to reveal a random tile\n");
-    println!("If you want to close the game, type 'q', 'quit' or 'exit'\n");
+    println!("You can use a hint, type {} to reveal a random tile\n", join_tokens(HINT_COMMANDS));
+    println!("If you want to restart the game, type {}\n", join_tokens(RESTART_COMMANDS));
+    println!("If you want to close the game, type {}", join_tokens(QUIT_COMMANDS));
 }
 
 pub fn want_to_quit(input: &str) -> bool {
-    let lower_guess = input.trim().to_lowercase();
-    lower_guess == "q" || lower_guess == "quit" || lower_guess == "exit"
+    QUIT_COMMANDS.contains(&&input.trim().to_lowercase()[..])
 }
 
 pub fn restart(input: &str) -> bool {
-    let lower_guess = input.trim().to_lowercase();
-    lower_guess == "restart"
+    RESTART_COMMANDS.contains(&&input.trim().to_lowercase()[..])
+}
+
+fn join_tokens<const L: usize>(array: [&str; L]) -> String {
+    let mut ret = String::new();
+    for (i, element) in array.iter().enumerate() {
+        if i > 0 {
+            if i == L-1 {
+                // last element
+                ret.push_str(", or ")
+            } else {
+                ret.push_str(", ")
+            }
+        }
+        ret.push_str(&format!("'{}'", element));
+    }
+    ret
+}
+
+#[test]
+fn join_tokens_test() {
+    assert_eq!(join_tokens([]), "");
+    assert_eq!(join_tokens(["General"]), "'General'");
+    assert_eq!(join_tokens(["General", "Kenobi"]), "'General', or 'Kenobi'");
+    assert_eq!(join_tokens(QUIT_COMMANDS), "'q', 'quit', or 'exit'");
 }
 
 pub fn get_size() -> (u8, u8) {
-    println!("How big map would you like? s (default), m, l, xl");
-    let mut input = String::new();
-    io::stdin().read_line(&mut input)
-        .expect("Failed to read.");
+    println!("How big map would you like? s, m, l, xl");
+    loop {
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)
+            .expect("Failed to read.");
 
-    if input.trim().to_lowercase() == "m" {
-        return (10, 8);
-    } else if input.trim().to_lowercase() == "l" {
-        return (15, 13);
-    } else if input.trim().to_lowercase() == "xl" {
-        return (35, 30);
+        let input = input.trim().to_lowercase();
+        if want_to_quit(&input) {
+            return (0, 0);
+        } else if input == "s" {
+            return (6, 5)
+        } else if input == "m" {
+            return (10, 8);
+        } else if input == "l" {
+            return (15, 13);
+        } else if input == "xl" {
+            return (35, 30);
+        }
+        println!("I don't understand this: {}. Type {} to set map size or {} to quit",
+            input, join_tokens(MAP_SIZE), join_tokens(QUIT_COMMANDS));
     }
-    (6, 5)
 }
 
 pub fn start_again() -> bool {
@@ -251,7 +287,7 @@ pub fn translate_move(input: &str) -> MoveType {
             Ok((row, column)) => MoveType::Mark { row, column },
             Err(_) => MoveType::Unknown,
         }
-    } else if input.starts_with("hint") {
+    } else if HINT_COMMANDS.contains(&&input.trim().to_lowercase()[..]) {
         MoveType::Hint
     } else if move_regex.is_match(input.trim()) {
         let index = parse_index(&input);
