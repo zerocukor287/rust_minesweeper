@@ -1,4 +1,6 @@
 use std::io::{self, ErrorKind};
+use std::thread::sleep;
+use std::time::Duration;
 
 use rand::Rng;
 use regex::Regex;
@@ -7,6 +9,7 @@ use super::map_generator::TileState;
 use super::map_draw::*;
 
 static QUIT_COMMANDS: [&str; 3] = ["q", "quit", "exit"];
+static CREDITS_COMMANDS: [&str; 2] = ["credits", "credit"];
 static RESTART_COMMANDS: [&str; 1] = ["restart"];
 static HINT_COMMANDS: [&str; 1] = ["hint"];
 static MAP_SIZE: [&str; 4] = ["s", "m", "l", "xl"];
@@ -33,8 +36,17 @@ pub fn print_help() {
     println!("If you want to close the game, type {}", join_tokens(QUIT_COMMANDS));
 }
 
+pub fn print_credits() {
+    println!("This game made by\nBalazs Erseki ~ zerocukor\n");
+    sleep(Duration::from_secs(2));
+}
+
 pub fn want_to_quit(input: &str) -> bool {
     QUIT_COMMANDS.contains(&&input.trim().to_lowercase()[..])
+}
+
+pub fn credits(input: &str) -> bool {
+    CREDITS_COMMANDS.contains(&&input.trim().to_lowercase()[..])
 }
 
 pub fn restart(input: &str) -> bool {
@@ -75,6 +87,8 @@ pub fn get_size() -> (u8, u8) {
         let input = input.trim().to_lowercase();
         if want_to_quit(&input) {
             return (0, 0);
+        } else if credits(&input) {
+            print_credits();
         } else if input == "s" {
             return (6, 5)
         } else if input == "m" {

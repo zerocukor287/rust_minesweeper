@@ -31,6 +31,8 @@ fn main() {
             if want_to_quit(&guess) {
                 still_playing = false;
                 break;
+            } else if credits(&guess) {
+                print_credits();
             } else if restart(&guess) {
                 break;
             } else if first_guess {
