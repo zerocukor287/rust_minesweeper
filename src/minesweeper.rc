@@ -1,1 +1,29 @@
+#include <winver.h>
 1 ICON "misc/minesweeper.ico"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 1,0,0,0
+PRODUCTVERSION 1,0,0,0
+FILEOS          VOS_NT
+FILETYPE VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName", "zerocukor"
+            VALUE "FileDescription", "Command line minesweeper game"
+            VALUE "FileVersion", "1.0.0"
+            VALUE "ProductVersion", "1.0.0"
+            VALUE "ProductName", "Minesweeper"
+            VALUE "InternalName", "Minesweeper"
+            VALUE "OriginalFilename", "Minesweeper"
+            // maybe a copyright, can I do it without buying stuff?
+            // VALUE "LegalCopyright", "Copyright © 2025 zerocukor
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
