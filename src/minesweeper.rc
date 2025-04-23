@@ -11,7 +11,7 @@ BEGIN
     BEGIN
         BLOCK "040904E4"
         BEGIN
-            VALUE "CompanyName", "zerocukor"
+            VALUE "CompanyName", "Chromatic Carrot Games"
             VALUE "FileDescription", "Command line minesweeper game"
             VALUE "FileVersion", "1.0.0"
             VALUE "ProductVersion", "1.0.0"

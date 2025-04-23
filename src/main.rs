@@ -30,6 +30,14 @@ fn main() {
             // process input
             if want_to_quit(&guess) {
                 still_playing = false;
+                let mut defused: usize = 0;
+                for row in &mines {
+                    defused += row.iter().filter(|tile| match tile {
+                        TileState::Marked(num) => *num < 0,
+                        _ => false
+                    }).count();
+                }
+                save_stats(defused, visible, false);
                 break;
             } else if credits(&guess) {
                 print_credits();

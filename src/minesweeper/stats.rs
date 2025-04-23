@@ -1,6 +1,7 @@
-use std::fs::{self, create_dir, File};
-use std::path::Path;
+use std::fs::{self, create_dir_all, File};
 use std::io::Write;
+
+use directories::ProjectDirs;
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Stats {
@@ -11,8 +12,6 @@ pub struct Stats {
 }
 
 const STATS_VERSION: u32 = 1;
-const STATS_DIR: &str = "data/";
-const STATS_PATH: &str = "data/stats.json";
 
 pub fn save_stats(defused: usize, revealed: usize, exploded: bool) {
     // get previous content, or empty if not existing
@@ -33,21 +32,50 @@ pub fn save_stats(defused: usize, revealed: usize, exploded: bool) {
     }
 
     // write file
-    let mut file = File::create(STATS_PATH).expect("I just created this file.. How can it be not accessible?");
-    let _ = file.write_all(serde_json::to_string(&data).unwrap().as_bytes());
+    if let Some(proj_dirs) = ProjectDirs::from("com", "ChromaticCarrot",  "Minesweeper") {
+        let mut file = File::create(proj_dirs.data_local_dir()
+                .join("stats.json"))
+                .expect("I just created this file.. How can it be not accessible?");
+        let _ = file.write_all(serde_json::to_string(&data).unwrap().as_bytes());
+    }
+
 }
 
 pub fn get_stats() -> Stats {
-    let stats_dir = Path::new(STATS_DIR);
-    if !stats_dir.exists() {
-        let _ = create_dir(stats_dir);
-    }
+    if let Some(proj_dirs) = ProjectDirs::from("com", "ChromaticCarrot",  "Minesweeper") {
+        if !proj_dirs.data_local_dir().exists() {
+            let result = create_dir_all(proj_dirs.data_local_dir());
+            match result {
+                Ok(_) => (),
+                Err(err) => println!("Error on creating the folder. {}", err),
+            }
+        }
 
-    if Path::new(STATS_PATH).exists() {
-        let data = fs::read_to_string(STATS_PATH).expect("Failed to read an existing file");
-        
-        let stats: Stats = serde_json::from_str(&data).expect("Bad formatted json");
-        stats
+        if proj_dirs.data_local_dir()
+                .join("stats.json").exists() {
+            let data = fs::read_to_string(proj_dirs.data_local_dir()
+                                    .join("stats.json"))
+                                    .expect("Failed to read an existing file");
+            
+            if let Ok(stats) = serde_json::from_str(&data) {
+                stats
+            } else {
+                // remove the corrupted file, and create a new one
+                Stats {
+                    version: 0,
+                    defused: 0,
+                    revealed: 0,
+                    exploded: 0,
+                }
+            }
+        } else {
+            Stats {
+                version: 0,
+                defused: 0,
+                revealed: 0,
+                exploded: 0,
+            }
+        }
     } else {
         Stats {
             version: 0,
@@ -56,6 +84,7 @@ pub fn get_stats() -> Stats {
             exploded: 0,
         }
     }
+
 }
 
 pub fn print_stats(stat: &Stats) {
