@@ -18,8 +18,7 @@ BEGIN
             VALUE "ProductName", "Minesweeper"
             VALUE "InternalName", "Minesweeper"
             VALUE "OriginalFilename", "Minesweeper"
-            // maybe a copyright, can I do it without buying stuff?
-            // VALUE "LegalCopyright", "Copyright © 2025 zerocukor
+            VALUE "LegalCopyright", "Copyright © 2025 Chromatic Carrot"
         END
     END
     BLOCK "VarFileInfo"

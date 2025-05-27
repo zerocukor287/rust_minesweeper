@@ -37,7 +37,13 @@ pub fn print_help() {
 }
 
 pub fn print_credits() {
-    println!("This game made by\nBalazs Erseki ~ zerocukor\n");
+    println!("");
+    println!("   Chromatic Carrot");
+    println!("www.chromaticcarrot.com\n");
+    println!("  Graphics designer:");
+    println!("(nobody)");
+    println!("  Programmer:");
+    println!("Balazs Erseki ~ zerocukor\n");
     sleep(Duration::from_secs(2));
 }
 
@@ -89,6 +95,7 @@ pub fn get_size() -> (u8, u8) {
             return (0, 0);
         } else if credits(&input) {
             print_credits();
+            println!("How big map would you like? s, m, l, xl");
         } else if input == "s" {
             return (6, 5)
         } else if input == "m" {
@@ -97,9 +104,10 @@ pub fn get_size() -> (u8, u8) {
             return (15, 13);
         } else if input == "xl" {
             return (35, 30);
+        } else {
+            println!("I don't understand this: {}. Type {} to set map size or {} to quit",
+                input, join_tokens(MAP_SIZE), join_tokens(QUIT_COMMANDS));
         }
-        println!("I don't understand this: {}. Type {} to set map size or {} to quit",
-            input, join_tokens(MAP_SIZE), join_tokens(QUIT_COMMANDS));
     }
 }
 
