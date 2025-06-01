@@ -41,6 +41,9 @@ fn main() {
                 break;
             } else if credits(&guess) {
                 print_credits();
+            } else if about(&guess) {
+                print_about();
+                print_credits();
             } else if restart(&guess) {
                 break;
             } else if first_guess {
