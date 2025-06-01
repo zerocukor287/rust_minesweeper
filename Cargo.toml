@@ -1,6 +1,6 @@
 [package]
-name = "cmd_minesweeper"
-version = "0.1.0"
+name = "Minesweeper_CLI"
+version = "1.0.1"
 edition = "2021"
 build = "build.rs"
 
@@ -10,7 +10,7 @@ authors = [
 ]
 
 [[bin]]
-name = "Minesweeper"
+name = "Minesweeper_CLI"
 path = "src/main.rs"
 
 [dependencies]
