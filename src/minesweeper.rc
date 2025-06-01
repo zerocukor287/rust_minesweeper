@@ -17,8 +17,8 @@ BEGIN
             VALUE "ProductVersion", "1.0.2"
             VALUE "ProductName", "Minesweeper CLI"
             VALUE "InternalName", "Minesweeper CLI"
-            VALUE "OriginalFilename", "Minesweeper CLI"
-            VALUE "LegalCopyright", "Copyright © 2025 Chromatic Carrot"
+            VALUE "OriginalFilename", "Minesweeper_CLI"
+            VALUE "LegalCopyright", "Copyright (c) 2025 Chromatic Carrot"
         END
     END
     BLOCK "VarFileInfo"
