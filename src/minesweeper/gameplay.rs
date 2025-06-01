@@ -13,6 +13,10 @@ static CREDITS_COMMANDS: [&str; 2] = ["credits", "credit"];
 static RESTART_COMMANDS: [&str; 1] = ["restart"];
 static HINT_COMMANDS: [&str; 1] = ["hint"];
 static MAP_SIZE: [&str; 4] = ["s", "m", "l", "xl"];
+static MAP_SIZE_SMALL: [&str; 2] = ["s", "small"];
+static MAP_SIZE_MED: [&str; 2] = ["m", "medium"];
+static MAP_SIZE_LARGE: [&str; 2] = ["l", "large"];
+static MAP_SIZE_EX: [&str; 4] = ["xl", "xxl", "extra", "extra large"];
 
 pub fn print_welcome() {
     println!("Hello, minesweeper!\n");
@@ -49,6 +53,22 @@ pub fn print_credits() {
 
 pub fn want_to_quit(input: &str) -> bool {
     QUIT_COMMANDS.contains(&&input.trim().to_lowercase()[..])
+}
+
+pub fn map_small(input: &str) -> bool {
+    MAP_SIZE_SMALL.contains(&&input.trim().to_lowercase()[..])
+}
+
+pub fn map_medium(input: &str) -> bool {
+    MAP_SIZE_MED.contains(&&input.trim().to_lowercase()[..])
+}
+
+pub fn map_large(input: &str) -> bool {
+    MAP_SIZE_LARGE.contains(&&input.trim().to_lowercase()[..])
+}
+
+pub fn map_extra(input: &str) -> bool {
+    MAP_SIZE_EX.contains(&&input.trim().to_lowercase()[..])
 }
 
 pub fn credits(input: &str) -> bool {
@@ -96,13 +116,13 @@ pub fn get_size() -> (u8, u8) {
         } else if credits(&input) {
             print_credits();
             println!("How big map would you like? s, m, l, xl");
-        } else if input == "s" {
+        } else if map_small(&input) {
             return (6, 5)
-        } else if input == "m" {
+        } else if map_medium(&input) {
             return (10, 8);
-        } else if input == "l" {
+        } else if map_large(&input) {
             return (15, 13);
-        } else if input == "xl" {
+        } else if map_extra(&input) {
             return (35, 30);
         } else {
             println!("I don't understand this: {}. Type {} to set map size or {} to quit",
@@ -111,17 +131,19 @@ pub fn get_size() -> (u8, u8) {
     }
 }
 
+static POSSIBLE_INPUTS_NO: [&str; 4] = ["n", "no", "nah", "nope"];
+static POSSIBLE_INPUTS_YES: [&str; 3] = ["y", "yes", "yeah"];
 pub fn start_again() -> bool {
-    let possible_inputs_no: [&str; 2] = ["n", "no"];
-    let possible_inputs_yes: [&str; 2] = ["y", "yes"];
     let mut input = String::new();
-    while !want_to_quit(&input) && !possible_inputs_no.contains(&input.trim()) && !possible_inputs_yes.contains(&input.trim()) {
+    while !want_to_quit(&input) &&
+            !POSSIBLE_INPUTS_NO.contains(&input.trim().to_lowercase().as_str()) &&
+            !POSSIBLE_INPUTS_YES.contains(&input.trim().to_lowercase().as_str()) {
         input.clear();
         println!("Do you want to start again? (y/n)");
         io::stdin().read_line(&mut input)
             .expect("Failed to read.");
     }
-    possible_inputs_yes.contains(&input.trim())
+    POSSIBLE_INPUTS_YES.contains(&input.trim().to_lowercase().as_str())
 }
 
 pub enum MoveResult {
