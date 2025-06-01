@@ -11,6 +11,8 @@ use super::map_draw::*;
 static QUIT_COMMANDS: [&str; 3] = ["q", "quit", "exit"];
 static CREDITS_COMMANDS: [&str; 2] = ["credits", "credit"];
 static ABOUT_COMMANDS: [&str; 1] = ["about"];
+static HELP_COMMANDS: [&str; 5] = ["help", "how", "how to", "?", "usage"];
+static STAT_COMMANDS: [&str; 2] = ["stat", "stats"];
 static RESTART_COMMANDS: [&str; 1] = ["restart"];
 static HINT_COMMANDS: [&str; 1] = ["hint"];
 static MAP_SIZE: [&str; 4] = ["s", "m", "l", "xl"];
@@ -33,10 +35,10 @@ pub fn print_error_with_help() {
 
 pub fn print_help() {
     println!("To reveal a tile, type the column and row - like \"A1\" or \"28BC\"");
-    println!("To mark as a potential mine, type \"mark\" with the position - like \"mark A1\" or \"mark 28BC\"");
-    println!("To defuse a mine, type \"def\" with the position - like \"def A1\" or \"def 28BC\"\n");
+    println!("To mark as a potential mine, type \"mark\" with the position - like \"mark A1\" or \"mark 28BC\". It will be shown as a '?' (question mark)");
+    println!("To defuse a mine, type \"def\" with the position - like \"def A1\" or \"def 28BC\". It will be shown as a '.' (dot)\n");
     println!("Type \"def\" with the position again to remove the defuser.\n");
-    println!("You can use a hint, type {} to reveal a random tile\n", join_tokens(HINT_COMMANDS));
+    println!("You can use some hints, type {} to reveal a random tile\n", join_tokens(HINT_COMMANDS));
     println!("If you want to restart the game, type {}\n", join_tokens(RESTART_COMMANDS));
     println!("If you want to close the game, type {}", join_tokens(QUIT_COMMANDS));
 }
@@ -219,6 +221,13 @@ pub fn want_to_quit(input: &str) -> bool {
     QUIT_COMMANDS.contains(&&input.trim().to_lowercase()[..])
 }
 
+pub fn help(input: &str) -> bool {
+    HELP_COMMANDS.contains(&&input.trim().to_lowercase()[..])
+}
+pub fn stat(input: &str) -> bool {
+    STAT_COMMANDS.contains(&&input.trim().to_lowercase()[..])
+}
+
 pub fn map_small(input: &str) -> bool {
     MAP_SIZE_SMALL.contains(&&input.trim().to_lowercase()[..])
 }
@@ -281,6 +290,9 @@ pub fn get_size() -> (u8, u8) {
         let input = input.trim().to_lowercase();
         if want_to_quit(&input) {
             return (0, 0);
+        } else if help(&input) {
+            print_help();
+            println!("How big map would you like? s, m, l, xl");
         } else if credits(&input) {
             print_credits();
             println!("How big map would you like? s, m, l, xl");

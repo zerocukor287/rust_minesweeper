@@ -39,6 +39,10 @@ fn main() {
                 }
                 save_stats(defused, visible, false);
                 break;
+            } else if help(&guess) {
+                print_help();
+            } else if stat(&guess) {
+                print_stats(&get_stats());
             } else if credits(&guess) {
                 print_credits();
             } else if about(&guess) {
