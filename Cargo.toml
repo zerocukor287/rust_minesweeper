@@ -1,5 +1,5 @@
 [package]
-name = "Minesweeper_CLI"
+name = "minesweeper_cli"
 version = "1.0.2"
 edition = "2021"
 build = "build.rs"
