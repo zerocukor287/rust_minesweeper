@@ -1,12 +1,18 @@
-use std::io::{self, ErrorKind};
+use std::io::{self, stdout, ErrorKind};
 use std::thread::sleep;
 use std::time::Duration;
 
+use crossterm::style::SetAttribute;
 use rand::Rng;
 use regex::Regex;
 
 use super::map_generator::TileState;
 use super::map_draw::*;
+
+use crossterm::{
+    style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
+    ExecutableCommand
+};
 
 static QUIT_COMMANDS: [&str; 3] = ["q", "quit", "exit"];
 static CREDITS_COMMANDS: [&str; 2] = ["credits", "credit"];
@@ -208,8 +214,15 @@ SOFTWARE."#);
 
 pub fn print_credits() {
     println!("");
-    println!("   Chromatic Carrot");
-    println!("www.chromaticcarrot.com\n");
+    stdout()
+        .execute(SetForegroundColor(Color::DarkYellow)).unwrap()
+        .execute(Print("   Chromatic Carrot\n")).unwrap()
+        .execute(ResetColor).unwrap();
+    stdout()
+        .execute(SetForegroundColor(Color::Blue)).unwrap()
+        .execute(SetAttribute(crossterm::style::Attribute::Underlined)).unwrap()
+        .execute(Print("www.chromaticcarrot.com\n")).unwrap()
+        .execute(ResetColor).unwrap();
     println!("  Graphics designer:");
     println!("(nobody)");
     println!("  Programmer:");
