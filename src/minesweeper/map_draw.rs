@@ -160,6 +160,7 @@ fn generate_line(mine_line: &Vec<TileState>, mine_char: char, show_revealed: boo
             TileState::Mine => line.push(mine_char),
             TileState::Marked(num) => line.push(if mine_char == ' ' {'.'} else { if *num < 0 {mine_char} else { 'M' }}),
             TileState::HiddenEmpty(_) => line.push(' '),
+            // TODO: Make the number colorful
             TileState::VisibleEmpty(num) => if show_revealed { line.push_str(num.to_string().as_str()) } else {line.push(' ')},
             TileState::Question(num) => line.push(if mine_char == ' ' {'?'} else { if *num < 0 {mine_char} else { '?' }}),
         }
