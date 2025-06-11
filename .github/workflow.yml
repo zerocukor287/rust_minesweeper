@@ -1,1 +1,33 @@
- 
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+      - feature/*
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Install Rust
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          components: rustfmt
+
+      # Step 3: Build the project
+      - name: Build
+        run: cargo build --release
+
+      # Step 4: Run tests
+      - name: Run Tests
+        run: cargo test --verbose
