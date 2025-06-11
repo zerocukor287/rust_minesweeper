@@ -10,7 +10,7 @@ use super::map_generator::TileState;
 use super::map_draw::*;
 
 use crossterm::{
-    style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
+    style::{Color, Print, ResetColor, SetForegroundColor},
     ExecutableCommand
 };
 
