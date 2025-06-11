@@ -330,6 +330,8 @@ pub fn get_size() -> (u8, u8) {
 
 static POSSIBLE_INPUTS_NO: [&str; 4] = ["n", "no", "nah", "nope"];
 static POSSIBLE_INPUTS_YES: [&str; 3] = ["y", "yes", "yeah"];
+
+/// This will keep asking the player if they want to start again, or exit
 pub fn start_again() -> bool {
     let mut input = String::new();
     while !want_to_quit(&input) &&
@@ -350,6 +352,7 @@ pub enum MoveResult {
     AlreadyRevealed,
 }
 
+/// It parses the move of the player, applies to the map, and returns if the player exploded or not
 pub fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
     match translate_move(&guess) {
         MoveType::Unknown =>print_error_with_help(),

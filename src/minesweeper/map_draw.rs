@@ -4,7 +4,7 @@ use crossterm::style::{StyledContent, Stylize};
 
 use super::map_generator::TileState;
 
-/// Generates a 2D map for minesweeper
+/// Draws a colorful 2D map for minesweeper
 pub fn visualize_map(
     mine_map: &Vec<Vec<TileState>>,
     mine_char: char,
@@ -197,7 +197,7 @@ fn generate_line(
                     if *num < 0 {
                         mine_char.to_string().stylize()
                     } else {
-                        "M".to_string().stylize()
+                        "M".to_string().yellow()
                     }
                 }),
             TileState::HiddenEmpty(_) => styled_line.push(" ".to_string().stylize()),
