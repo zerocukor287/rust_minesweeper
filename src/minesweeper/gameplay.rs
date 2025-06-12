@@ -432,6 +432,7 @@ pub fn show_hint( mines: &mut Vec<Vec<TileState>>) -> MoveResult {
     let rand_row = rand::thread_rng().gen_range(0..=mines.len()-1);
     match mines[rand_row][rand_column] {
         TileState::Mine => show_hint(mines),
+        TileState::Explosion => MoveResult::Explosion,
         TileState::Marked(num) => if num < 0 || num != best_hidden {show_hint(mines)} else {defuse_tile(rand_row, rand_column, mines);reveal_tile(rand_row, rand_column, mines, true)},
         TileState::HiddenEmpty(num) => if i16::from(num) == best_hidden { reveal_tile(rand_row, rand_column, mines, true) } else { show_hint(mines) },
         TileState::VisibleEmpty(_) => show_hint(mines),
@@ -441,7 +442,8 @@ pub fn show_hint( mines: &mut Vec<Vec<TileState>>) -> MoveResult {
 
 pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>, force: bool) -> MoveResult {
     mine_map[row][column] = match mine_map[row][column]{
-        TileState::Mine => return MoveResult::Explosion,
+        TileState::Mine => TileState::Explosion,
+        TileState::Explosion => TileState::Explosion,
         TileState::Marked(num) =>
             if !force || num < 0 {
                 return MoveResult::MakesNoSense
@@ -452,6 +454,10 @@ pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
         TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed,
         TileState::Question(x) => if x < 0 { return MoveResult::Explosion } else { TileState::VisibleEmpty(x as u8) },
     };
+
+    if mine_map[row][column] == TileState::Explosion {
+        return MoveResult::Explosion;
+    }
 
     // reveal neighbors
     if mine_map[row][column] == TileState::VisibleEmpty(0) {
@@ -487,6 +493,7 @@ pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
 pub fn defuse_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
     mine_map[row][column] = match mine_map[row][column]{
         TileState::Mine => TileState::Marked(-1),
+        TileState::Explosion => TileState::Explosion,
         TileState::Marked(num) => if num < 0 {TileState::Mine} else {TileState::HiddenEmpty(num as u8)},
         TileState::HiddenEmpty(num) => TileState::Marked(num as i16),
         TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed,
@@ -499,6 +506,7 @@ pub fn defuse_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
 pub fn mark_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
     mine_map[row][column] = match mine_map[row][column]{
         TileState::Mine => TileState::Question(-1),
+        TileState::Explosion => TileState::Explosion,
         TileState::Marked(num) => TileState::Question(num),
         TileState::HiddenEmpty(num) => TileState::Question(num as i16),
         TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed,

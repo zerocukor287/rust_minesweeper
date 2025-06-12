@@ -6,6 +6,7 @@ use crate::reveal_tile;
 #[derive(Clone, PartialEq, Debug)]
 pub enum TileState {
     Mine,
+    Explosion,
     Marked(i16),      // I use an unsigned, and -1 means it was a mine before mark
     HiddenEmpty(u8),   // we might have up to 8 mines
     VisibleEmpty(u8),

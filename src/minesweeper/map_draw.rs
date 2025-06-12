@@ -189,21 +189,27 @@ fn generate_line(
     styled_line.push(spaces_text.clone().stylize());
     for tile in mine_line.iter() {
         match tile {
-            TileState::Mine => styled_line.push(mine_char.to_string().stylize()),
+            TileState::Mine => styled_line.push(
+                if show_revealed {
+                    mine_char.to_string().stylize()
+                } else {
+                    mine_char.to_string().green()
+                }),
+            TileState::Explosion => styled_line.push(mine_char.to_string().on_red()),
             TileState::Marked(num) => styled_line.push(
                 if mine_char == ' ' {
                     ".".to_string().stylize()
                 } else {
                     if *num < 0 {
-                        mine_char.to_string().stylize()
+                        mine_char.to_string().green()
                     } else {
-                        "M".to_string().yellow()
+                        ".".to_string().yellow()
                     }
                 }),
             TileState::HiddenEmpty(_) => styled_line.push(" ".to_string().stylize()),
             TileState::VisibleEmpty(num) => {
                 if show_revealed {
-                    if *num == 0 || mine_char != ' '{
+                    if *num == 0 {
                         styled_line.push(num.to_string().stylize())
                     } else if *num == 1 {
                         styled_line.push(num.to_string().blue())
