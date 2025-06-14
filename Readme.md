@@ -1,7 +1,7 @@
 # Rusty Minesweeper
 This is a reincarnation of the classic minesweeper game.
 
-![screenshot](misc/screenshot.bmp)
+![screenshot](misc/screenshot.png)
 
 # Key features
 - Minimalistic, command line interface

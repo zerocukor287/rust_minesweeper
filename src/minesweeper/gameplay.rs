@@ -1,12 +1,18 @@
-use std::io::{self, ErrorKind};
+use std::io::{self, stdout, ErrorKind};
 use std::thread::sleep;
 use std::time::Duration;
 
+use crossterm::style::SetAttribute;
 use rand::Rng;
 use regex::Regex;
 
 use super::map_generator::TileState;
 use super::map_draw::*;
+
+use crossterm::{
+    style::{Color, Print, ResetColor, SetForegroundColor},
+    ExecutableCommand
+};
 
 static QUIT_COMMANDS: [&str; 3] = ["q", "quit", "exit"];
 static CREDITS_COMMANDS: [&str; 2] = ["credits", "credit"];
@@ -208,8 +214,15 @@ SOFTWARE."#);
 
 pub fn print_credits() {
     println!("");
-    println!("   Chromatic Carrot");
-    println!("www.chromaticcarrot.com\n");
+    stdout()
+        .execute(SetForegroundColor(Color::DarkYellow)).unwrap()
+        .execute(Print("   Chromatic Carrot\n")).unwrap()
+        .execute(ResetColor).unwrap();
+    stdout()
+        .execute(SetForegroundColor(Color::Blue)).unwrap()
+        .execute(SetAttribute(crossterm::style::Attribute::Underlined)).unwrap()
+        .execute(Print("www.chromaticcarrot.com\n")).unwrap()
+        .execute(ResetColor).unwrap();
     println!("  Graphics designer:");
     println!("(nobody)");
     println!("  Programmer:");
@@ -317,6 +330,8 @@ pub fn get_size() -> (u8, u8) {
 
 static POSSIBLE_INPUTS_NO: [&str; 4] = ["n", "no", "nah", "nope"];
 static POSSIBLE_INPUTS_YES: [&str; 3] = ["y", "yes", "yeah"];
+
+/// This will keep asking the player if they want to start again, or exit
 pub fn start_again() -> bool {
     let mut input = String::new();
     while !want_to_quit(&input) &&
@@ -337,6 +352,7 @@ pub enum MoveResult {
     AlreadyRevealed,
 }
 
+/// It parses the move of the player, applies to the map, and returns if the player exploded or not
 pub fn process_input(guess: &str, mines: &mut Vec<Vec<TileState>>) -> bool{
     match translate_move(&guess) {
         MoveType::Unknown =>print_error_with_help(),
@@ -416,6 +432,7 @@ pub fn show_hint( mines: &mut Vec<Vec<TileState>>) -> MoveResult {
     let rand_row = rand::thread_rng().gen_range(0..=mines.len()-1);
     match mines[rand_row][rand_column] {
         TileState::Mine => show_hint(mines),
+        TileState::Explosion => MoveResult::Explosion,
         TileState::Marked(num) => if num < 0 || num != best_hidden {show_hint(mines)} else {defuse_tile(rand_row, rand_column, mines);reveal_tile(rand_row, rand_column, mines, true)},
         TileState::HiddenEmpty(num) => if i16::from(num) == best_hidden { reveal_tile(rand_row, rand_column, mines, true) } else { show_hint(mines) },
         TileState::VisibleEmpty(_) => show_hint(mines),
@@ -425,7 +442,8 @@ pub fn show_hint( mines: &mut Vec<Vec<TileState>>) -> MoveResult {
 
 pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>, force: bool) -> MoveResult {
     mine_map[row][column] = match mine_map[row][column]{
-        TileState::Mine => return MoveResult::Explosion,
+        TileState::Mine => TileState::Explosion,
+        TileState::Explosion => TileState::Explosion,
         TileState::Marked(num) =>
             if !force || num < 0 {
                 return MoveResult::MakesNoSense
@@ -436,6 +454,10 @@ pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
         TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed,
         TileState::Question(x) => if x < 0 { return MoveResult::Explosion } else { TileState::VisibleEmpty(x as u8) },
     };
+
+    if mine_map[row][column] == TileState::Explosion {
+        return MoveResult::Explosion;
+    }
 
     // reveal neighbors
     if mine_map[row][column] == TileState::VisibleEmpty(0) {
@@ -471,6 +493,7 @@ pub fn reveal_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
 pub fn defuse_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
     mine_map[row][column] = match mine_map[row][column]{
         TileState::Mine => TileState::Marked(-1),
+        TileState::Explosion => TileState::Explosion,
         TileState::Marked(num) => if num < 0 {TileState::Mine} else {TileState::HiddenEmpty(num as u8)},
         TileState::HiddenEmpty(num) => TileState::Marked(num as i16),
         TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed,
@@ -483,6 +506,7 @@ pub fn defuse_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>
 pub fn mark_tile(row: usize, column: usize, mine_map: &mut Vec<Vec<TileState>>) -> MoveResult {
     mine_map[row][column] = match mine_map[row][column]{
         TileState::Mine => TileState::Question(-1),
+        TileState::Explosion => TileState::Explosion,
         TileState::Marked(num) => TileState::Question(num),
         TileState::HiddenEmpty(num) => TileState::Question(num as i16),
         TileState::VisibleEmpty(_) => return MoveResult::AlreadyRevealed,

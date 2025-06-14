@@ -1,44 +1,63 @@
 use std::io::ErrorKind;
 
+use crossterm::style::{StyledContent, Stylize};
+
 use super::map_generator::TileState;
 
-/// Generates a 2D map for minesweeper
-pub fn visualize_map(mine_map: &Vec<Vec<TileState>>, mine_char: char, show_revealed: bool) -> String {
-    let mut map = String::new();
-    map.push_str(add_first_line(mine_map[0].len() as u8).as_str());
-    map.push('\n');
+/// Draws a colorful 2D map for minesweeper
+pub fn visualize_map(
+    mine_map: &Vec<Vec<TileState>>,
+    mine_char: char,
+    show_revealed: bool,
+) {
+    let mut map: Vec<StyledContent<String>> = Vec::new();
+    map.push(add_first_line(mine_map[0].len() as u8).stylize());
+    map.push("\n".to_string().stylize());
     for row in 0..(mine_map.len() as u8) {
-        map.push_str(generate_line(&mine_map[row as usize], mine_char, show_revealed).as_str());
-        map.push(' ');
-        map.push_str(add_row_number(row).as_str());
-        map.push('\n');
+        map.append(&mut generate_line(
+            &mine_map[row as usize],
+            mine_char,
+            show_revealed,
+        ));
+        map.push(" ".to_string().stylize());
+        map.push(add_row_number(row).stylize());
+        map.push("\n".to_string().stylize());
     }
-    map
+
+    for token in map {
+        print!("{}", token);
+    }
 }
 
 pub fn get_progress(mine_map: &Vec<Vec<TileState>>) -> (usize, usize) {
     let mut visible_tiles = 0;
     let mut remaining_tiles = 0;
     for row in mine_map {
-        visible_tiles += row.iter().filter(|tile| match tile {
-            TileState::VisibleEmpty(_) => true,
-            _ => false
-        }).count();
-        remaining_tiles += row.iter().filter(|tile| match tile {
-            TileState::HiddenEmpty(_) => true,
-            TileState::Question(num) => *num >= 0,
-            TileState::Marked(num) => *num >= 0,
-            _ => false
-        }).count();
+        visible_tiles += row
+            .iter()
+            .filter(|tile| match tile {
+                TileState::VisibleEmpty(_) => true,
+                _ => false,
+            })
+            .count();
+        remaining_tiles += row
+            .iter()
+            .filter(|tile| match tile {
+                TileState::HiddenEmpty(_) => true,
+                TileState::Question(num) => *num >= 0,
+                TileState::Marked(num) => *num >= 0,
+                _ => false,
+            })
+            .count();
     }
     (visible_tiles, remaining_tiles)
 }
 
-const MAX_ASCII_CHARACTERS: u8 = 26;    // chars A-Z
-const FIRST_ASCII_CHARACTERS: u8 = 65;  // letter A
+const MAX_ASCII_CHARACTERS: u8 = 26; // chars A-Z
+const FIRST_ASCII_CHARACTERS: u8 = 65; // letter A
 
 /// Adds a header at the end of the row as characters
-/// 
+///
 /// It starts from 'A' till 'Z' then adds and extra 'A', like 'AA' for row 26, 'AB' for row 27 etc.
 fn add_row_number(row: u8) -> String {
     let mut ret = String::new();
@@ -49,7 +68,10 @@ fn add_row_number(row: u8) -> String {
     let mut characters: Vec<u8> = Vec::new();
     let ascii_char = (row % MAX_ASCII_CHARACTERS) + FIRST_ASCII_CHARACTERS;
     characters.push(ascii_char);
-    ret.push_str(std::str::from_utf8(&characters[..]).expect("Ohh boi! I cannot convert numbers to characters"));
+    ret.push_str(
+        std::str::from_utf8(&characters[..])
+            .expect("Ohh boi! I cannot convert numbers to characters"),
+    );
     ret
 }
 
@@ -120,7 +142,7 @@ fn number_of_spaces(width: u8) -> u8 {
 }
 
 /// Generates the first row, aka header to the map
-/// 
+///
 /// Empty string in case of 0, and then numbers separated by spaces.
 /// The number of the spaces depends on the maximum column number.
 fn add_first_line(width: u8) -> String {
@@ -128,12 +150,12 @@ fn add_first_line(width: u8) -> String {
     if width == 0 {
         return line;
     }
-    let spaces = number_of_spaces (width) + 1;
+    let spaces = number_of_spaces(width) + 1;
     line.push(' ');
     for number in 0..width {
         line.push_str((number + 1).to_string().as_str());
         let digits = number_of_spaces(number + 1);
-        for _ in 0..(spaces-digits) {
+        for _ in 0..(spaces - digits) {
             line.push(' ');
         }
     }
@@ -148,36 +170,94 @@ fn add_first_line_test() {
     assert_eq!(" 1  2  3  4  5  6  7  8  9  10 11 12 ", add_first_line(12));
 }
 
-fn generate_line(mine_line: &Vec<TileState>, mine_char: char, show_revealed: bool) -> String {
-    let mut line = String::new();
-    let spaces = number_of_spaces (mine_line.len() as u8);
-    line.push('|');
+fn generate_line(
+    mine_line: &Vec<TileState>,
+    mine_char: char,
+    show_revealed: bool,
+) -> Vec<StyledContent<String>> {
+    let mut styled_line: Vec<StyledContent<String>> = Vec::new();
+
+    //styled_line.push("blue".blue());
+
+    let spaces = number_of_spaces(mine_line.len() as u8);
+    styled_line.push("|".to_string().stylize());
+    // add spaces
+    let mut spaces_text = String::new();
     for _ in 0..spaces {
-        line.push(' ');
+        spaces_text.push(' ');
     }
+    styled_line.push(spaces_text.clone().stylize());
     for tile in mine_line.iter() {
         match tile {
-            TileState::Mine => line.push(mine_char),
-            TileState::Marked(num) => line.push(if mine_char == ' ' {'.'} else { if *num < 0 {mine_char} else { 'M' }}),
-            TileState::HiddenEmpty(_) => line.push(' '),
-            TileState::VisibleEmpty(num) => if show_revealed { line.push_str(num.to_string().as_str()) } else {line.push(' ')},
-            TileState::Question(num) => line.push(if mine_char == ' ' {'?'} else { if *num < 0 {mine_char} else { '?' }}),
+            TileState::Mine => styled_line.push(
+                if show_revealed {
+                    mine_char.to_string().stylize()
+                } else {
+                    mine_char.to_string().green()
+                }),
+            TileState::Explosion => styled_line.push(mine_char.to_string().on_red()),
+            TileState::Marked(num) => styled_line.push(
+                if mine_char == ' ' {
+                    ".".to_string().stylize()
+                } else {
+                    if *num < 0 {
+                        mine_char.to_string().green()
+                    } else {
+                        ".".to_string().yellow()
+                    }
+                }),
+            TileState::HiddenEmpty(_) => styled_line.push(" ".to_string().stylize()),
+            TileState::VisibleEmpty(num) => {
+                if show_revealed {
+                    if *num == 0 {
+                        styled_line.push(num.to_string().stylize())
+                    } else if *num == 1 {
+                        styled_line.push(num.to_string().blue())
+                    } else if *num == 2 {
+                        styled_line.push(num.to_string().green())
+                    } else if *num == 3 {
+                        styled_line.push(num.to_string().yellow())
+                    } else if *num == 4 {
+                        styled_line.push(num.to_string().red())
+                    } else if *num == 5 {
+                        styled_line.push(num.to_string().magenta())
+                    } else if *num == 6 {
+                        styled_line.push(num.to_string().cyan())
+                    } else if *num == 7 {
+                        styled_line.push(num.to_string().dark_yellow())
+                    } else if *num == 8 {
+                        styled_line.push(num.to_string().dark_red())
+                    }
+                } else {
+                    styled_line.push(" ".to_string().stylize())
+                }
+            }
+            TileState::Question(num) => styled_line.push(
+                if mine_char == ' ' {
+                    "?".to_string().stylize()
+                } else {
+                    if *num < 0 {
+                        mine_char.to_string().stylize()
+                    } else {
+                        "?".to_string().stylize()
+                    }
+                }),
         }
-        line.push('|');
-        for _ in 0..spaces {
-            line.push(' ');
-        }
+        styled_line.push("|".to_string().stylize());
+        styled_line.push(spaces_text.clone().stylize());
     }
-    line
+    styled_line
 }
 
 pub fn get_column_number(input: &str) -> Result<u8, ErrorKind> {
     match input.parse::<u8>() {
-        Ok(num) => if num > 0 { 
-            Ok(num-1)
-        } else {
-            Err(ErrorKind::InvalidInput)
-        },
+        Ok(num) => {
+            if num > 0 {
+                Ok(num - 1)
+            } else {
+                Err(ErrorKind::InvalidInput)
+            }
+        }
         _ => Err(ErrorKind::InvalidInput),
     }
 }

@@ -6,8 +6,9 @@ use crate::reveal_tile;
 #[derive(Clone, PartialEq, Debug)]
 pub enum TileState {
     Mine,
-    Marked(i16),
-    HiddenEmpty(u8),
+    Explosion,
+    Marked(i16),      // I use an unsigned, and -1 means it was a mine before mark
+    HiddenEmpty(u8),   // we might have up to 8 mines
     VisibleEmpty(u8),
     Question(i16),
 }
@@ -35,6 +36,7 @@ pub fn generate_map(width: u8, height: u8) -> Vec<Vec<TileState>> {
     ret
 }
 
+/// this will fill the numbers in the map
 fn fill_neighbours(mines: &mut Vec<Vec<TileState>>) {
 
     let height = mines.len();
@@ -62,6 +64,7 @@ fn add_one(tile: &TileState) -> TileState {
     }
 }
 
+/// count the surrounding tiles (if we are not at the edge)
 pub fn count_neigbour_mines(row: usize, column: usize, mines: &mut Vec<Vec<TileState>>, height: usize, width: usize) -> TileState {    
     let mut tile = TileState::HiddenEmpty(0);
     
